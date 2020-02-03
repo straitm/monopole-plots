@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <iostream>
 
-const double textsize = 0.05;
+const double textsize = 0.057;
 
 TCanvas *c1 = new TCanvas("c1", "Coverage");
 
@@ -113,8 +113,8 @@ void draw(TH2F* h)
 
   c1->SetRightMargin(0.025);
   c1->SetTopMargin(0.025);
-  c1->SetLeftMargin(0.12);
-  c1->SetBottomMargin(0.13);
+  c1->SetLeftMargin(0.13);
+  c1->SetBottomMargin(0.14);
 
   
   {
@@ -149,8 +149,8 @@ void draw(TH2F* h)
   line_labels.SetTextSize(textsize);
   line_labels.SetTextFont(42);
   line_labels.SetTextAlign(22);
-  line_labels.DrawLatex(3.9, -2.2, "#minus2.2");
-  line_labels.DrawLatex(3.9, -3.5, "#minus3.5");
+  line_labels.DrawLatex(3.8, -2.22, "#minus2.2");
+  line_labels.DrawLatex(3.8, -3.5, "#minus3.5");
 }
 
 
