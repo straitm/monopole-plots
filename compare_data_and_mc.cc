@@ -6,8 +6,8 @@
 #include "Constants.hh"
 #include "Event_Info.hh"
 #include "Event_List.hh"
-#include "MFRoot.hh"
 
+#include <TROOT.h>
 #include <TArrow.h>
 #include <TFile.h>
 #include <TH1.h>
@@ -19,9 +19,28 @@
 
 #include <fstream>
 #include <iostream>
+#include <string>
 
-using namespace MFRoot;
-Canvas_Manager cans;
+static double textsize = 0.057;
+
+typedef std::map<std::string, TH1*> hist_t;
+typedef std::map<std::string, hist_t> hists_t;
+typedef std::map<std::string, double> tree_t;
+typedef std::map<std::string, tree_t> trees_t;
+
+template<typename T>
+T get(std::map<std::string, T> const& m, const std::string element)
+{
+  if (m.find(element) == m.end())
+  {
+    std::cerr << "\n\n\t\tThe map does not contain the following element: "
+              << element << "\n\n"
+              << std::endl;
+    _exit(1);
+  }
+
+  return m.at(element);
+}
 
 struct Hist_Info
 {
@@ -55,11 +74,14 @@ void fill_hists           (hist_t & h, tree_t const& t, TTree* tree,
 
 void compare_data_and_mc()
 {
+  gROOT->LoadMacro("Event_List.cc+");
+  gROOT->LoadMacro("Event_Info.cc+");
+
   gStyle->SetOptStat("");
 
   std::map<std::string, TFile*> files;
-  files[DATA_SAMPLE_NAME] = open(DATA_RECO_FILE);
-  files["MC"] = open(MC_RECO_FILE);
+  files[DATA_SAMPLE_NAME] = new TFile(DATA_RECO_FILE.c_str(), "read");
+  files["MC"] = new TFile(MC_RECO_FILE.c_str(), "read");
 
   std::map<std::string, TTree*> trees;
   for (auto const& file : files)
@@ -92,11 +114,7 @@ void compare_data_and_mc()
     double mc_integral = mc_hist->Integral();
 
     double scale_factor = data_integral / mc_integral;
-    mc_hist->Scale(scale_factor);
-
-    std::cout << "hist_name, data_integral, mc_integral, scale_factor = "
-	      << hist_name << ", " << data_integral << ", " << mc_integral
-	      << ", " << scale_factor << std::endl;
+    if(data_integral > 0) mc_hist->Scale(scale_factor);
   }
   
   for (auto const& hists : h) {
@@ -136,11 +154,11 @@ void declare_hists(hists_t & h, const std::string type)
       {"Number of Reco Tracks",         5, -0.5, 4.5},
       {"First Preselected Reco Track",  5, -0.5, 4.5},
 
-      {"r2 xt" ,                  50, 0, 1},
-      {"r2 yt" ,                  50, 0, 1},
-      {"r2 min",                  50, 0, 1},
-      {"r2 min low gap",          50, 0, 1},
-      {"r2 min low gap and slow", 50, 0, 1},
+      {"r2 xt" ,                  40, 0, 1},
+      {"r2 yt" ,                  40, 0, 1},
+      {"r2 min",                  40, 0, 1},
+      {"r2 min low gap",          40, 0, 1},
+      {"r2 min low gap and slow", 40, 0, 1},
       
       {"Track #Deltax", 32, 0, 16},
       {"Track #Deltay", 32, 0, 16},
@@ -150,9 +168,9 @@ void declare_hists(hists_t & h, const std::string type)
       {"#theta_{xz}", 37, -92.5, 92.5},
       {"#theta_{yz}", 37, -92.5, 92.5},
 
-      {"time gap xz" , 100, 0, 1},
-      {"time gap yz" , 100, 0, 1},
-      {"time gap max", 100, 0, 1}
+      {"time gap xz" , 50, 0, 1},
+      {"time gap yz" , 50, 0, 1},
+      {"time gap max", 50, 0, 1}
     };
 
   for (auto const& i : infos)
@@ -192,7 +210,7 @@ void fill_hists(hist_t & h, tree_t const& t, TTree* tree, std::string type)
     int gapbin = 1;
     while(ingap >> what >> val){
       if(type == what)
-        get(h, "r2 min low gap and slow")->SetBinContent(gapbin++, val);
+        get(h, "time gap max")->SetBinContent(gapbin++, val);
     }
 
     return;
@@ -237,8 +255,8 @@ void fill_hists(hist_t & h, tree_t const& t, TTree* tree, std::string type)
     get(h, "r2 min")->Fill(r2min);
 
     const double dt = e.get("dt", n_track);
-    const double gap_xz = dt == 0?0:e.get("max_time_gap_xz", n_track) / dt;
-    const double gap_yz = dt == 0?0:e.get("max_time_gap_yz", n_track) / dt;
+    const double gap_xz = dt == 0?1:e.get("max_time_gap_xz", n_track) / dt;
+    const double gap_yz = dt == 0?1:e.get("max_time_gap_yz", n_track) / dt;
     const double gap_max = std::max(gap_xz, gap_yz);
 
     if(e.high_r2_min() && e.is_slow()){
@@ -290,7 +308,6 @@ void draw_beta(hists_t const& h, std::string hist_name)
   
   mc->SetLineColor(kRed);
   
-  cans.new_canvas(hist_name, true);
   data->Draw();
   mc->Draw("SAMES");
 }
@@ -320,17 +337,15 @@ void draw_dplane(hists_t const& h, std::string hist_name)
 
   mc->SetLineColor(kRed);
   
-  cans.new_canvas(canvas_name);
-
   data->Draw("E HIST");
 
-  mc->Draw("SAMES");
 
-  TLegend *l = new TLegend(0.5, 0.7, 0.88, 0.88);
+
+  TLegend *l = new TLegend(0.5, 0.7, 0.7, 0.88);
   l->SetTextSizePixels(20);
   l->AddEntry(data, "Data", "l");
   std::string mc_legend_title =
-    "Monopole MC (#beta = " + MC_BETA_NICE_NAME + ")";
+    "MC, #beta = " + MC_BETA_NICE_NAME;
   l->AddEntry(mc, mc_legend_title.c_str(), "l");
   l->Draw();  
 }
@@ -362,15 +377,14 @@ void draw_n_hits(hists_t const& h, std::string hist_name)
 
   mc->SetLineColor(kRed);
   
-  cans.new_canvas(canvas_name);
 
   data->Draw("E HIST");
   mc->Draw("SAMES");
 
-  TLegend *l = new TLegend(0.6, 0.7, 0.88, 0.88);
+  TLegend *l = new TLegend(0.6, 0.7, 0.7, 0.88);
   l->SetTextSizePixels(20);
-  l->AddEntry(data, "Min-Bias Data", "l");
-  l->AddEntry(mc, "Monopole MC", "l");
+  l->AddEntry(data, "Data", "l");
+  l->AddEntry(mc, "MC", "l");
   l->Draw();  
 }
 
@@ -390,7 +404,6 @@ void draw_n_tracks(hists_t const& h, std::string hist_name)
 
   mc->SetLineColor(kRed);
 
-  cans.new_canvas(hist_name.c_str());
   data->Draw();
   mc->Draw("SAMES");
 }
@@ -408,42 +421,39 @@ void draw_projected_length(hists_t const& h, std::string hist_name)
 
   mc->SetLineColor(kRed);
   
-  cans.new_canvas(hist_name);
-  data->Draw();
-  resize_stats_box(data, 0.435, 0.635, 0.55, 0.95);
   data->Draw();
 
   mc->Draw("SAMES");
-  resize_stats_box(mc, 0.235, 0.435, 0.55, 0.95);
-  mc->Draw("SAME");
 }
 
 
 void draw_r2(hists_t const& h, std::string hist_name)
 {
-  std::ofstream outfile("r2histdat.txt");
-  if(!outfile.is_open()){
-    fprintf(stderr, "Could not open r2histdat.txt for writing\n");
-  }
-
   TH1* data = get(h.at(DATA_SAMPLE_NAME), hist_name);
   TH1* mc   = get(h.at("MC"), hist_name);
   TAxis *x  = data->GetXaxis();
   TAxis *y  = data->GetYaxis();
 
-  for(int i = 1; i <= data->GetNbinsX(); i++)
-    outfile << "Data" << data->GetBinContent(i) << endl;
-  for(int i = 1; i <= mc->GetNbinsX(); i++)
-    outfile << "MC" << mc->GetBinContent(i) << endl;
-  outfile.close();
+  if(0 != access("r2histdat.txt", F_OK)){
+    std::ofstream outfile("r2histdat.txt");
+    if(!outfile.is_open()){
+      fprintf(stderr, "Could not open r2histdat.txt for writing\n");
+    }
 
-  std::string axis_name = "Correlation Coefficient (xt)";
+    for(int i = 1; i <= data->GetNbinsX(); i++)
+      outfile << "Data " << data->GetBinContent(i) << endl;
+    for(int i = 1; i <= mc->GetNbinsX(); i++)
+      outfile << "MC " << mc->GetBinContent(i) << endl;
+    outfile.close();
+  }
+
+  std::string axis_name = "Correlation coefficient (xt)";
   std::string canvas_name = "r2_XT";
   if (hist_name.find("yt") != std::string::npos) {
-    axis_name = "Correlation Coefficient (yt)";
+    axis_name = "Correlation coefficient (yt)";
     canvas_name = "r2_YT";
   } else if (hist_name.find("min") != std::string::npos) {
-    axis_name = "Correlation Coefficient (min)";
+    axis_name = "Correlation coefficient r^{2}_{min}";
     canvas_name = "r2_Min";
 
     if (hist_name.find("low gap") != std::string::npos)
@@ -456,15 +466,18 @@ void draw_r2(hists_t const& h, std::string hist_name)
   x->SetTitle(axis_name.c_str());
   x->CenterTitle();
   
-  y->SetTitle("Number of Events");
+  y->SetTitle("Number of events");
   y->CenterTitle();
-  y->SetRangeUser(5e-1, 1e6);
+  y->SetRangeUser(5e-1, 1e5);
+
+  x->SetTitleOffset(1.06);
+  y->SetTitleOffset(1.1);
   
   mc->SetLineColor(kRed);
+  mc->SetMarkerColor(kRed);
+  mc->SetLineStyle(7);
   
-  cans.new_canvas(canvas_name, false, true);
-
-  TCanvas * c1 = cans.get(canvas_name);
+  TCanvas * c1 = new TCanvas;
 
   c1->SetCanvasSize(600, 400);
   c1->SetRightMargin(0.025);
@@ -472,30 +485,43 @@ void draw_r2(hists_t const& h, std::string hist_name)
   c1->SetLeftMargin(0.14);
   c1->SetBottomMargin(0.14);
 
+  y->SetTickSize(0.015);
+  x->SetDecimals();
+
+  data->Draw("hist");
+  mc->Draw("SAME hist");
+
   c1->SetLogy();
   c1->SetLogz();
   c1->SetTickx();
   c1->SetTicky();
 
-  data->Draw("E HIST");
-  mc->Draw("SAMES");
+  x->SetTitleSize(textsize);
+  y->SetTitleSize(textsize);
+  x->SetLabelSize(textsize);
+  y->SetLabelSize(textsize);
 
-  TLegend *l = new TLegend(0.4, 0.7, 0.88, 0.88);
-  l->SetTextSizePixels(20);
-  l->AddEntry(data, "Min-Bias Data", "l");
+  TLegend *leg = new TLegend(0.25, 0.75, 0.55, 0.93);
+  leg->SetTextSize(textsize);
+  leg->SetBorderSize(0);
+  leg->SetFillStyle(0);
+  leg->SetTextFont(42);
+
+  leg->AddEntry(data, "Data", "l");
   std::string mc_legend_title =
-    "Monopole MC (#beta = " + MC_BETA_NICE_NAME + ")";
-  l->AddEntry(mc, mc_legend_title.c_str(), "l");
-  l->Draw();
+    "MC, #beta = " + MC_BETA_NICE_NAME + ", normalized to data";
+  leg->AddEntry(mc, mc_legend_title.c_str(), "l");
+  leg->Draw();
 
   if (hist_name.find("min") != std::string::npos) {
-    TLine *line = new TLine(0.95, 0.5, 0.95, 1e6);
+    TLine *line = new TLine(0.95, 0.5, 0.95, 1e5);
     line->SetLineColor(kGreen + 2);
     line->SetLineWidth(2);
     line->SetLineStyle(2);
     line->Draw();
 
-    TArrow *arrow = new TArrow(0.95, 5.4e4, 0.985, 5.4e4, 0.015, "|>");
+    TArrow *arrow = new TArrow(0.95, 3.5e4, 0.985, 3.5e4, 0.013, "|>");
+    arrow->SetLineWidth(2);
     arrow->SetLineColor(kGreen + 2);
     arrow->SetFillColor(kGreen + 2);
     arrow->Draw();
@@ -519,35 +545,31 @@ void draw_theta(hists_t const& h, std::string hist_name)
   
   std::string canvas_name = "Theta XZ";
   if (hist_name.find("yz") != std::string::npos) canvas_name = "Theta YZ";
-  cans.new_canvas(canvas_name);
 
-  data->Draw();
-  resize_stats_box(data, 0.435, 0.635, 0.55, 0.95);
   data->Draw();
 
   mc->Draw("SAMES");
-  resize_stats_box(mc, 0.235, 0.435, 0.55, 0.95);
-  mc->Draw("SAME");
 }
 
 
 void draw_time_gap(hists_t const& h, std::string hist_name)
 {
-  std::ofstream outfile("gaphistdat.txt");
-  if(!outfile.is_open()){
-    fprintf(stderr, "Could not open gaphistdat.txt for writing\n");
-  }
-
   TH1* data = get(h.at(DATA_SAMPLE_NAME), hist_name);
   TH1* mc   = get(h.at("MC"), hist_name);
   TAxis *x  = data->GetXaxis();
   TAxis *y  = data->GetYaxis();
 
-  for(int i = 1; i <= data->GetNbinsX(); i++)
-    outfile << "Data" << data->GetBinContent(i) << endl;
-  for(int i = 1; i <= mc->GetNbinsX(); i++)
-    outfile << "MC" << mc->GetBinContent(i) << endl;
-  outfile.close();
+  if(0 != access("gaphistdat.txt", F_OK)){
+    std::ofstream outfile("gaphistdat.txt");
+    if(!outfile.is_open()){
+      fprintf(stderr, "Could not open gaphistdat.txt for writing\n");
+    }
+    for(int i = 1; i <= data->GetNbinsX(); i++)
+      outfile << "Data " << data->GetBinContent(i) << endl;
+    for(int i = 1; i <= mc->GetNbinsX(); i++)
+      outfile << "MC " << mc->GetBinContent(i) << endl;
+    outfile.close();
+  }
 
   std::string axis_name = "Time Gap Fraction (xt)";
   std::string canvas_name = "Time Gap XT";
@@ -555,23 +577,23 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
     axis_name = "Time Gap Fraction (yt)";
     canvas_name = "Time Gap YT";
   } else if (hist_name.find("max") != std::string::npos) {
-    axis_name = "Time Gap Fraction (max)";
+    axis_name = "Time gap fraction f_{max}";
     canvas_name = "Time Gap Max";
   }
 
   x->SetTitle(axis_name.c_str());
   x->CenterTitle();
   
-  y->SetTitle("Number of Events");
+  y->SetTitle("Number of events");
   y->CenterTitle();
-  auto y_max = 1.1 * std::max(data->GetMaximum(), mc->GetMaximum());
+  auto y_max = 1.5;
   y->SetRangeUser(0, y_max);
 
   mc->SetLineColor(kRed);
+  mc->SetMarkerColor(kRed);
+  mc->SetLineStyle(7);
   
-  cans.new_canvas(canvas_name);
-
-  TCanvas * c1 = cans.get(canvas_name);
+  TCanvas * c1 = new TCanvas;
 
   c1->SetCanvasSize(600, 400);
   c1->SetRightMargin(0.025);
@@ -579,22 +601,32 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
   c1->SetLeftMargin(0.14);
   c1->SetBottomMargin(0.14);
 
-  c1->SetLogy();
-  c1->SetLogz();
   c1->SetTickx();
   c1->SetTicky();
 
+  x->SetTitleSize(textsize);
+  y->SetTitleSize(textsize);
+  x->SetLabelSize(textsize);
+  y->SetLabelSize(textsize);
+  y->SetTickSize(0.015);
+  x->SetDecimals();
+  x->SetTitleOffset(1.06);
+  y->SetTitleOffset(1.1);
 
-  data->Draw("E HIST");
-  mc->Draw("SAMES");
+  data->Draw("hist");
+  mc->Draw("SAME hist ][");
 
-  TLegend *l = new TLegend(0.4, 0.7, 0.88, 0.88);
-  l->SetTextSizePixels(20);
-  l->AddEntry(data, "Min-Bias Data", "l");
+  TLegend *leg = new TLegend(0.35, 0.75, 0.65, 0.93);
+  leg->SetTextSize(textsize);
+  leg->SetBorderSize(0);
+  leg->SetFillStyle(0);
+  leg->SetTextFont(42);
+  leg->SetTextSizePixels(20);
+  leg->AddEntry(data, "Data", "l");
   std::string mc_legend_title =
-    "Monopole MC (#beta = " + MC_BETA_NICE_NAME + ")";
-  l->AddEntry(mc, mc_legend_title.c_str(), "l");
-  l->Draw();
+    "MC, #beta = " + MC_BETA_NICE_NAME + ", normalized to data";
+  leg->AddEntry(mc, mc_legend_title.c_str(), "l");
+  leg->Draw();
 
   if (hist_name.find("max") != std::string::npos) {
     TLine *line = new TLine(0.2, 0, 0.2, y_max);
@@ -604,7 +636,8 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
     line->Draw();
 
     TArrow *arrow =
-      new TArrow(0.2, 0.8 * y_max, 0.15, 0.8 * y_max, 0.015, "|>");
+      new TArrow(0.2, 0.8 * y_max, 0.15, 0.8 * y_max, 0.012, "|>");
+    arrow->SetLineWidth(2);
     arrow->SetLineColor(kGreen + 2);
     arrow->SetFillColor(kGreen + 2);
     arrow->Draw();
@@ -631,13 +664,12 @@ void draw_track_length(hists_t const& h)
     
   mc->SetLineColor(kRed);
 
-  cans.new_canvas("Track Length");
   data->Draw("E HIST");
   mc->Draw("SAMES");
 
-  TLegend *l = new TLegend(0.6, 0.7, 0.88, 0.88);
+  TLegend *l = new TLegend(0.6, 0.7, 0.7, 0.88);
   l->SetTextSizePixels(20);
-  l->AddEntry(data, "Min-Bias Data", "l");
-  l->AddEntry(mc, "Monopole MC", "l");
+  l->AddEntry(data, "Data", "l");
+  l->AddEntry(mc, "MC", "l");
   l->Draw();
 }

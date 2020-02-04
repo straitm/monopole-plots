@@ -38,15 +38,15 @@ const std::string MC_TRIG_FILE =
 const std::string DATA_SAMPLE_NAME = "Data";
 
 const std::string MC_BETA_NAME      = "1.0e-03";
-const std::string MC_BETA_NICE_NAME = "10^{-3}";
+const std::string MC_BETA_NICE_NAME = "10^{#minus3}";
 // const std::string MC_BETA_NAME      = "3.1e-04";
-// const std::string MC_BETA_NICE_NAME = "3#times10^{-4}";
+// const std::string MC_BETA_NICE_NAME = "3#times10^{#minus4}";
 // const std::string MC_BETA_NAME      = "1.0e-04";
-// const std::string MC_BETA_NICE_NAME = "10^{-4}";
+// const std::string MC_BETA_NICE_NAME = "10^{#minus4}";
 // const std::string MC_BETA_NAME      = "5.0e-03";
-// const std::string MC_BETA_NICE_NAME = "5#times10^{-3}";
+// const std::string MC_BETA_NICE_NAME = "5#times10^{#minus3}";
 // const std::string MC_BETA_NAME      = "5.0e-04";
-// const std::string MC_BETA_NICE_NAME = "5#times10^{-4}";
+// const std::string MC_BETA_NICE_NAME = "5#times10^{#minus4}";
 
 
 
