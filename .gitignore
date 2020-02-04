@@ -1,0 +1,6 @@
+nose_data.txt
+r2histdata.txt
+gaphistdata.txt
+*.swp
+*.swo
+data/

@@ -22,6 +22,8 @@
 
 using namespace MFRoot;
 
+static double textsize = 0.057;
+
 /*
   This class keeps track of the cumulative information needed to calculate
   the final 90% C.L. upper limits.
@@ -110,7 +112,7 @@ double Limit_Info::limit(std::string coverage) const
     std::cerr << "Coverage value (" << coverage << ") is not valid."
 	      << std::endl;
 
-  double T = Constants::LIVE_TIME_DDT_CORRECTED;
+  double T = LIVE_TIME_DDT_CORRECTED;
 
   if (projected_area_total() > 0)
   {
@@ -165,16 +167,18 @@ double Limit_Info::projected_area_total() const
 
 typedef std::map<double, Limit_Info> lim_t;
 
-void draw_limits(lim_t lims)
+void draw_limits(const lim_t & lims)
 {
   std::map<std::string, TGraph*> g;
   g["half"] = new TGraph();
   g["full"] = new TGraph();
 
   int n_point = 0;
-  for(unsigned int i = 0; i < lims.size(); i++)
+  for(const auto & lim : lims)
   {
-    Limit_Info info = lims[i];
+    const Limit_Info & info = lim.second;
+
+    printf("log beta = %f\n", info.log_beta());
 
     if (info.log_beta() > -3.6 && info.log_beta() < -2.2)
     {
@@ -186,10 +190,15 @@ void draw_limits(lim_t lims)
 
   TCanvas *can = new TCanvas;
 
-  can->SetLeftMargin(0.12);
-  can->SetRightMargin(0.05);
-  can->SetBottomMargin(0.12);
-  can->SetTopMargin(0.09);
+  can->SetCanvasSize(600, 400);
+  can->SetRightMargin(0.025);
+  can->SetTopMargin(0.03);
+  can->SetLeftMargin(0.14);
+  can->SetBottomMargin(0.14);
+
+  can->SetLogy();
+  can->SetTickx();
+  can->SetTicky();
   
   g.at("half")->Draw("APC");
   g.at("full")->Draw("SAME PC");
@@ -202,31 +211,36 @@ void draw_limits(lim_t lims)
   
   TAxis *x = g.at("half")->GetXaxis();
   x->SetTitle("Monopole Velocity (#beta)");
-  x->SetTitleOffset(1.2);
-  x->SetTitleSize(0.04);
+  x->SetTitleOffset(1.1);
+  x->SetTitleSize(textsize);
+  x->SetLabelSize(textsize);
   x->CenterTitle();
   x->SetNdivisions(6, 5, 0, true);
-  x->SetLabelOffset(0.012);
 
   TAxis *y = g.at("half")->GetYaxis();
-  y->SetTitle("90% C.L. Upper Flux Limit (cm^{-2}s^{-1}sr^{-1})");
+  y->SetTitle("90% C.L. Flux Limit (cm^{#minus2}s^{#minus1}sr^{#minus1})");
   y->CenterTitle();
-  y->SetTitleOffset(1.3);
-  y->SetTitleSize(0.04);
+  y->SetTitleOffset(1.2);
+  y->SetTitleSize(textsize);
+  y->SetLabelSize(textsize);
   y->SetRangeUser(1e-16, 1e-12);
 
-  TLegend *l = new TLegend(0.5, 0.73, 0.91, 0.87);
+  TLegend *l = new TLegend(0.3, 0.77, 0.71, 0.91);
+  l->SetTextSize(textsize);
+  l->SetBorderSize(0);
+  l->SetFillStyle(0);
+  l->SetTextFont(42);
   l->AddEntry
-    (g.at("half"), "#Omega = 2#pi, m > 5 #times 10^{8} GeV/c^{2}", "pl");
+    (g.at("half"), "m > 5 #times 10^{8} GeV/c^{2} (#Omega = 2#pi)", "pl");
   l->AddEntry
-    (g.at("full"), "#Omega = 4#pi, m > 2 #times 10^{15} GeV/c^{2}", "pl");
+    (g.at("full"), "m > 2 #times 10^{15} GeV/c^{2} (#Omega = 4#pi)", "pl");
   l->Draw();
 
   can->SaveAs("limit_plot.pdf");
 }
 
 
-lim_t extract_limits(std::string file_name)
+lim_t extract_limits(const std::string & file_name)
 {
   std::cout << "extracting limits from " << file_name << std::endl;
 
@@ -236,30 +250,29 @@ lim_t extract_limits(std::string file_name)
   std::string *input_file_name = new std::string("invalid");
   tree->SetBranchAddress("input_file_name", &input_file_name);
 
-  for(unsigned int i = 0; i < Constants::nbranch; i++)
-    tree->SetBranchAddress(Constants::BRANCH_NAMES[i], &t[Constants::BRANCH_NAMES[i]]);
+  for(unsigned int i = 0; i < nbranch; i++)
+    tree->SetBranchAddress(BRANCH_NAMES[i], &t[BRANCH_NAMES[i]]);
 
   lim_t lims;
-  
+
   for (int entry = 0; entry != tree->GetEntries(); ++entry)
-  // for (int entry = 0; entry != 10000; ++entry)
   {
     if (entry % 100000 == 0)
-      std::cout << "processing entry " << entry << " ..." << std::endl;
+      std::cout << "processing entry " << entry << " of " << tree->GetEntries()
+                << " ..." << std::endl;
 
     tree->GetEntry(entry);
 
-    if (*input_file_name == "invalid")
-    {
-      std::cerr << "\n\n\t\tThe input_file_name branch is not set!\n"
-		<< std::endl;
-      
-      assert(false);
+#if 0
+    if (*input_file_name == "invalid"){
+      std::cerr << "\n\n\t\tThe input_file_name branch is not set!\n" << std::endl;
+      _exit(1);
     }
+#endif
 
     Event_Info e(t, *input_file_name);
+    const double beta_f = e.beta_from_file_name();
 
-    double beta_f = e.beta_from_file_name();
     if (lims.find(beta_f) == lims.end())
       lims[beta_f] = Limit_Info(beta_f);
 
@@ -272,31 +285,10 @@ lim_t extract_limits(std::string file_name)
   return lims;
 }
 
-void limit()
+int main()
 {
   std::map<std::string, lim_t> l;
-  // l["low"] = extract_limits(Constants::MC_RECO_FILE_LOW_ENERGY);
-  // l["high"] = extract_limits(Constants::MC_RECO_FILE_HIGH_ENERGY);
-  l["0.9dEdx"] = extract_limits(Constants::MC_RECO_FILE);
+  l["0.9dEdx"] = extract_limits(MC_RECO_FILE);
 
-  // draw_limits(l["low"]);
-  // draw_limits(l["high"]);
   draw_limits(l["0.9dEdx"]);
-  // for (auto const& lim : l["0.9dEdx"])
-  //   lim.second.print();
-
-  // determine the maximum limit
-  // for (auto const& lim : l["low"])
-  // {
-  //   double beta = lim.first;
-  //   if (l["low"].at(beta).limit("half") > l["high"].at(beta).limit("half"))
-  //     l["max"][beta] = l["low"].at(beta);
-  //   else
-  //     l["max"][beta] = l["high"].at(beta);
-  // }
-  // draw_limits(l["max"], "Max");
-
-  // std::cout << "\n\nFinal Limits" << std::endl;
-  // for (auto const& lim : l["max"])
-  //   lim.second.print();
 }

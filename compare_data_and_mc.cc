@@ -17,6 +17,7 @@
 #include <TStyle.h>
 #include <TTree.h>
 
+#include <fstream>
 #include <iostream>
 
 using namespace MFRoot;
@@ -105,14 +106,7 @@ void compare_data_and_mc()
     }
   }
 
-  draw_r2(h, "r2 xt");
-  draw_r2(h, "r2 yt");
-  draw_r2(h, "r2 min");
-  draw_r2(h, "r2 min low gap");
   draw_r2(h, "r2 min low gap and slow");
-
-  draw_time_gap(h, "time gap xz");
-  draw_time_gap(h, "time gap yz");
   draw_time_gap(h, "time gap max");
 }
 
@@ -181,67 +175,91 @@ void declare_hists(hists_t & h, const std::string type)
 
 void fill_hists(hist_t & h, tree_t const& t, TTree* tree, std::string type)
 {
+  std::ifstream inr2("r2histdat.txt");
+  std::ifstream ingap("gaphistdat.txt");
+  if(inr2.is_open() && ingap.is_open()){
+    printf("Reading in data from cached histogram files r2histdat.txt\n"
+           "and gaphistdat.txt and ignoring ROOT files.  Remove the cache\n"
+           "files to regenerate\n");
+
+    std::string what;
+    double val;
+    int r2bin = 1;
+    while(inr2 >> what >> val){
+      if(type == what)
+        get(h, "r2 min low gap and slow")->SetBinContent(r2bin++, val);
+    }
+    int gapbin = 1;
+    while(ingap >> what >> val){
+      if(type == what)
+        get(h, "r2 min low gap and slow")->SetBinContent(gapbin++, val);
+    }
+
+    return;
+  }
+
   std::string *input_file_name = new std::string("invalid");
   if (type != DATA_SAMPLE_NAME)
     tree->SetBranchAddress("input_file_name", &input_file_name);
 
   Event_List elist(type);
-  // for (int entry = 0; entry != tree->GetEntries(); ++entry)
-  for (int entry = 0; entry != 200000; ++entry)
-  {
+  for (int entry = 0; entry < tree->GetEntries(); ++entry){
+  // for (int entry = 0; entry < 1000000; ++entry) {
     tree->GetEntry(entry);
+    if(entry%0x10000 == 0) printf("Entry %d\n", entry);
     Event_Info e(t, *input_file_name);
 
     if (!e.beta_value_matches(MC_BETA_NAME)) continue;
-    bool duplicate_event = elist.is_duplicate(e.run(), e.subrun(), e.event());
-    if (duplicate_event) continue;
-    if (e.n_tracks() >= 0)
-      get(h, "Number of Reco Tracks")->Fill(e.n_tracks());
 
-    if (e.is_preselected_reco()) {
-      int n_track = e.first_preselected_reco_track();
-      get(h, "First Preselected Reco Track")->Fill(n_track);
-      get(h, "Beta")->Fill(e.get("beta", n_track));
-      get(h, "dplane xz")->Fill(e.get("dplane_x", n_track));
-      get(h, "dplane yz")->Fill(e.get("dplane_y", n_track));
-      get(h, "nhits")->Fill(e.get("n_hits", n_track));
-      get(h, "nhits xz")->Fill(e.get("n_hits_x", n_track));
-      get(h, "nhits yz")->Fill(e.get("n_hits_y", n_track));
-      get(h, "#theta_{xz}")->Fill(e.reco_theta("xz", n_track));
-      get(h, "#theta_{yz}")->Fill(e.reco_theta("yz", n_track));
+    if (elist.is_duplicate(e.run(), e.subrun(), e.event())) continue;
 
-      double r2_xt = e.get("r2_xt", n_track);
-      double r2_yt = e.get("r2_yt", n_track);
-      get(h, "r2 xt")->Fill(r2_xt);
-      get(h, "r2 yt")->Fill(r2_yt);
-      get(h, "r2 min")->Fill(std::min(r2_xt, r2_yt));
+    get(h, "Number of Reco Tracks")->Fill(e.n_tracks());
 
+    if (!e.is_preselected_reco()) continue;
 
-      double dt = e.get("dt", n_track);
-      if (dt != 0) {
-        double gap_xz = e.get("max_time_gap_xz", n_track) / dt;
-        double gap_yz = e.get("max_time_gap_yz", n_track) / dt;
+    const int n_track = e.first_preselected_reco_track();
 
-        get(h, "time gap xz")->Fill(gap_xz);
-        get(h, "time gap yz")->Fill(gap_yz);
-        get(h, "time gap max")->Fill(std::max(gap_xz, gap_yz));
-      } else {
-        std::cerr << "This track has zero time duration!!!" << std::endl;
-      }
+    get(h, "First Preselected Reco Track")->Fill(n_track);
+    get(h, "Beta")       ->Fill(e.get("beta",      n_track));
+    get(h, "dplane xz")  ->Fill(e.get("dplane_x",  n_track));
+    get(h, "dplane yz")  ->Fill(e.get("dplane_y",  n_track));
+    get(h, "nhits")      ->Fill(e.get("n_hits",    n_track));
+    get(h, "nhits xz")   ->Fill(e.get("n_hits_x",  n_track));
+    get(h, "nhits yz")   ->Fill(e.get("n_hits_y",  n_track));
+    get(h, "#theta_{xz}")->Fill(e.reco_theta("xz", n_track));
+    get(h, "#theta_{yz}")->Fill(e.reco_theta("yz", n_track));
 
-      // tree reports track length in cm, let's use meters here
-      get(h, "Track #Deltax")->Fill(e.get("dx", n_track) / 100);
-      get(h, "Track #Deltay")->Fill(e.get("dy", n_track) / 100);
-      get(h, "Track #Deltaz")->Fill(e.get("dz", n_track) / 100);
+    const double r2_xt = e.get("r2_xt", n_track);
+    const double r2_yt = e.get("r2_yt", n_track);
+    const double r2min = std::min(r2_xt, r2_yt);
+    get(h, "r2 xt")->Fill(r2_xt);
+    get(h, "r2 yt")->Fill(r2_yt);
+    get(h, "r2 min")->Fill(r2min);
 
-      get(h, "Track Length")->Fill(e.get("length", n_track) / 100);
+    const double dt = e.get("dt", n_track);
+    const double gap_xz = dt == 0?0:e.get("max_time_gap_xz", n_track) / dt;
+    const double gap_yz = dt == 0?0:e.get("max_time_gap_yz", n_track) / dt;
+    const double gap_max = std::max(gap_xz, gap_yz);
 
-      if (e.low_gap_max()) {
-        get(h, "r2 min low gap")->Fill(std::min(r2_xt, r2_yt));
+    if(e.high_r2_min() && e.is_slow()){
+      get(h, "time gap xz")->Fill(gap_xz);
+      get(h, "time gap yz")->Fill(gap_yz);
+      get(h, "time gap max")->Fill(gap_max);
+    }
 
-        if (e.is_slow())
-          get(h, "r2 min low gap and slow")->Fill(std::min(r2_xt, r2_yt));
-      }
+    if(dt == 0)
+      std::cerr << "This track has zero time duration!!!" << std::endl;
+
+    get(h, "Track #Deltax")->Fill(e.get("dx"    , n_track) / 100);
+    get(h, "Track #Deltay")->Fill(e.get("dy"    , n_track) / 100);
+    get(h, "Track #Deltaz")->Fill(e.get("dz"    , n_track) / 100);
+    get(h, "Track Length") ->Fill(e.get("length", n_track) / 100);
+
+    if (e.low_gap_max()) {
+      get(h, "r2 min low gap")->Fill(std::min(r2_xt, r2_yt));
+
+      if (e.is_slow())
+        get(h, "r2 min low gap and slow")->Fill(std::min(r2_xt, r2_yt));
     }
 
     if (e.is_linear()) {
@@ -251,9 +269,10 @@ void fill_hists(hist_t & h, tree_t const& t, TTree* tree, std::string type)
       get(h, "Beta Linear Events")->Fill(beta);
 
       if (type == DATA_SAMPLE_NAME && e.is_slow())
-        std::cout << "Slow Event! (run, event, beta) = ("
-          << get(t, "run_number") << ", " << get(t, "event_number") << ", "
-          << beta << ")" << std::endl;
+        printf("Selected data: run %5.0f ev %7.0f beta %6.4f "
+               "fmax %5.3f r2min %5.3f\n",
+          get(t, "run_number"), get(t, "event_number"),
+          beta, gap_max, r2min);
     }
   }
 }
@@ -402,10 +421,21 @@ void draw_projected_length(hists_t const& h, std::string hist_name)
 
 void draw_r2(hists_t const& h, std::string hist_name)
 {
+  std::ofstream outfile("r2histdat.txt");
+  if(!outfile.is_open()){
+    fprintf(stderr, "Could not open r2histdat.txt for writing\n");
+  }
+
   TH1* data = get(h.at(DATA_SAMPLE_NAME), hist_name);
   TH1* mc   = get(h.at("MC"), hist_name);
   TAxis *x  = data->GetXaxis();
   TAxis *y  = data->GetYaxis();
+
+  for(int i = 1; i <= data->GetNbinsX(); i++)
+    outfile << "Data" << data->GetBinContent(i) << endl;
+  for(int i = 1; i <= mc->GetNbinsX(); i++)
+    outfile << "MC" << mc->GetBinContent(i) << endl;
+  outfile.close();
 
   std::string axis_name = "Correlation Coefficient (xt)";
   std::string canvas_name = "r2_XT";
@@ -434,6 +464,19 @@ void draw_r2(hists_t const& h, std::string hist_name)
   
   cans.new_canvas(canvas_name, false, true);
 
+  TCanvas * c1 = cans.get(canvas_name);
+
+  c1->SetCanvasSize(600, 400);
+  c1->SetRightMargin(0.025);
+  c1->SetTopMargin(0.03);
+  c1->SetLeftMargin(0.14);
+  c1->SetBottomMargin(0.14);
+
+  c1->SetLogy();
+  c1->SetLogz();
+  c1->SetTickx();
+  c1->SetTicky();
+
   data->Draw("E HIST");
   mc->Draw("SAMES");
 
@@ -457,6 +500,8 @@ void draw_r2(hists_t const& h, std::string hist_name)
     arrow->SetFillColor(kGreen + 2);
     arrow->Draw();
   }
+
+  c1->SaveAs("r2min-n-1.pdf");
 }
 
 
@@ -488,10 +533,21 @@ void draw_theta(hists_t const& h, std::string hist_name)
 
 void draw_time_gap(hists_t const& h, std::string hist_name)
 {
+  std::ofstream outfile("gaphistdat.txt");
+  if(!outfile.is_open()){
+    fprintf(stderr, "Could not open gaphistdat.txt for writing\n");
+  }
+
   TH1* data = get(h.at(DATA_SAMPLE_NAME), hist_name);
   TH1* mc   = get(h.at("MC"), hist_name);
   TAxis *x  = data->GetXaxis();
   TAxis *y  = data->GetYaxis();
+
+  for(int i = 1; i <= data->GetNbinsX(); i++)
+    outfile << "Data" << data->GetBinContent(i) << endl;
+  for(int i = 1; i <= mc->GetNbinsX(); i++)
+    outfile << "MC" << mc->GetBinContent(i) << endl;
+  outfile.close();
 
   std::string axis_name = "Time Gap Fraction (xt)";
   std::string canvas_name = "Time Gap XT";
@@ -514,6 +570,20 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
   mc->SetLineColor(kRed);
   
   cans.new_canvas(canvas_name);
+
+  TCanvas * c1 = cans.get(canvas_name);
+
+  c1->SetCanvasSize(600, 400);
+  c1->SetRightMargin(0.025);
+  c1->SetTopMargin(0.03);
+  c1->SetLeftMargin(0.14);
+  c1->SetBottomMargin(0.14);
+
+  c1->SetLogy();
+  c1->SetLogz();
+  c1->SetTickx();
+  c1->SetTicky();
+
 
   data->Draw("E HIST");
   mc->Draw("SAMES");
@@ -539,6 +609,8 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
     arrow->SetFillColor(kGreen + 2);
     arrow->Draw();
   }
+
+  c1->SaveAs("fmax-n-1.pdf");
 }
 
 

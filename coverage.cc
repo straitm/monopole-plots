@@ -3,7 +3,7 @@
   plots them on a 2D histogram.
  */
 
-#include <MFRoot.hh>
+#include "MFRoot.hh"
 
 #include <TColor.h>
 #include <TCanvas.h>
@@ -112,8 +112,8 @@ void draw(TH2F* h)
   c1->SetTicky();
 
   c1->SetRightMargin(0.025);
-  c1->SetTopMargin(0.025);
-  c1->SetLeftMargin(0.13);
+  c1->SetTopMargin(0.03);
+  c1->SetLeftMargin(0.14);
   c1->SetBottomMargin(0.14);
 
   
@@ -144,6 +144,17 @@ void draw(TH2F* h)
   line.SetLineWidth(3);
   line.DrawLine(4.4, -2.2, 18, -2.2);
   line.DrawLine(4.4, -3.5, 18, -3.5);
+  line.DrawLine(log10(5e8) , -3.5, log10(5e8) , -2.2);
+  line.DrawLine(log10(2e15), -3.5, log10(2e15), -2.2);
+
+  const double arrowy = (-2.2 -3.5)/2, arrowdx = 1.0;
+  TArrow * ahalf = new TArrow(log10(5e8), arrowy, log10(5e8)+arrowdx, arrowy, 0.02, "|>");
+  ahalf->SetLineWidth(2);
+  ahalf->Draw();
+
+  TArrow * afull = new TArrow(log10(2e15), arrowy, log10(2e15)+arrowdx, arrowy, 0.02, "|>");
+  afull->SetLineWidth(2);
+  afull->Draw();
 
   TLatex line_labels;
   line_labels.SetTextSize(textsize);
