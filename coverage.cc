@@ -96,8 +96,8 @@ void draw(TH2F* h)
   x->SetNdivisions(15, 0, 0, true);
   x->SetRangeUser(4.5, 18);
   
-  y->SetTitle("log_{10}(Monopole speed (#beta))");
-  y->SetTitleOffset(1.1);
+  y->SetTitle("log_{10}#beta");
+  y->SetTitleOffset(0.9);
   y->SetTitleSize(textsize);
   y->SetLabelSize(textsize);
   y->CenterTitle();
@@ -111,9 +111,9 @@ void draw(TH2F* h)
   c1->SetTickx();
   c1->SetTicky();
 
-  c1->SetRightMargin(0.025);
+  c1->SetRightMargin(0.09);
   c1->SetTopMargin(0.03);
-  c1->SetLeftMargin(0.14);
+  c1->SetLeftMargin(0.11);
   c1->SetBottomMargin(0.14);
 
   
@@ -142,12 +142,12 @@ void draw(TH2F* h)
   line.SetLineColor(kBlack);
   line.SetLineStyle(kDashed);
   line.SetLineWidth(3);
-  line.DrawLine(4.4, -2.2, 18, -2.2);
+  line.DrawLine(4.4, -2.1, 18, -2.1);
   line.DrawLine(4.4, -3.5, 18, -3.5);
-  line.DrawLine(log10(5e8) , -3.5, log10(5e8) , -2.2);
-  line.DrawLine(log10(2e15), -3.5, log10(2e15), -2.2);
+  line.DrawLine(log10(5e8) , -3.5, log10(5e8) , -2.1);
+  line.DrawLine(log10(2e15), -3.5, log10(2e15), -2.1);
 
-  const double arrowy = (-2.2 -3.5)/2, arrowdx = 1.0;
+  const double arrowy = (-2.1 -3.5)/2, arrowdx = 1.0;
   TArrow * ahalf = new TArrow(log10(5e8), arrowy, log10(5e8)+arrowdx, arrowy, 0.02, "|>");
   ahalf->SetLineWidth(2);
   ahalf->Draw();
@@ -160,8 +160,8 @@ void draw(TH2F* h)
   line_labels.SetTextSize(textsize);
   line_labels.SetTextFont(42);
   line_labels.SetTextAlign(22);
-  line_labels.DrawLatex(3.8, -2.22, "#minus2.2");
-  line_labels.DrawLatex(3.8, -3.5, "#minus3.5");
+  line_labels.DrawLatex(18.8, -2.1 + 0.02, "#minus2.1");
+  line_labels.DrawLatex(18.8, -3.5 + 0.02, "#minus3.5");
 }
 
 

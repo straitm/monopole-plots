@@ -178,15 +178,22 @@ void draw_limits(const lim_t & lims)
   {
     const Limit_Info & info = lim.second;
 
-    printf("log beta = %f\n", info.log_beta());
-
-    if (info.log_beta() > -3.6 && info.log_beta() < -2.2)
+    if (info.log_beta() > -4.0 && info.log_beta() < -1.0)
     {
+      if(info.limit("full")*1e15 > 10)
+        printf("  $%3.1f$ & %02.0lf & %.0lf\\phantom{.0} \\\\\n",
+          info.log_beta(), info.limit("half")*1e15, info.limit("full")*1e15);
+      else
+        printf("  $%3.1f$ & %02.0lf & \\phantom{0}%.1lf \\\\\n",
+          info.log_beta(), info.limit("half")*1e15, info.limit("full")*1e15);
+
       g.at("half")->SetPoint(n_point, info.log_beta(), info.limit("half"));
       g.at("full")->SetPoint(n_point, info.log_beta(), info.limit("full"));
       ++n_point;
     }
   }
+
+  g.at("half")->SavePrimitive(std::cout);
 
   TCanvas *can = new TCanvas;
 

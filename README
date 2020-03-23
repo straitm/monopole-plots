@@ -1,34 +1,6 @@
-===========
-PAPER PLOTS
-===========
-This tarball contains all of the ROOT macros and files required to generate the plots for the paper.
+Say "make" to build the plots.
 
-Additional Packages
-===================
-root -l (all of the required classes will be loaded by rootlogon.C)
-
-Plotting Macros
-===============
-- Solid Angle Coverage
-.x coverage.cc+
-
-- Limit
-.x limit.cc+
-
-- Correlation Coefficient and Time Gap Fraction
-.x compare_data_and_mc.cc+
-
-- Beta/Correlation Coefficient Scatter
-.x scatter.cc+
-
-General Notes
-=============
-- The Canvas_Manager is declared as a global variable so that I can save them from the command line:
-cans.save_all("blah")
-
-[I know it's a hack, but I have not been able to work out a more elegant solution.]
-
-- Because of this hack, it's not possible to run the macros in one Root session.  I usually quit a session before making another set of canvases.
-
-- The plots involving data take some time because the total slow monopole sample is quite large.
-
+This code is based on Martin's, and the methods used are a Frankenstein
+conglomeration of Martin's methods and mine.  There's no particular rhyme or
+reason to which is used where.  It's just how things fell when I was figuring
+it out.

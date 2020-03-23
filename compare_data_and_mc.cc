@@ -146,6 +146,7 @@ void declare_hists(hists_t & h, const std::string type)
     {
       {"dplane xz", 30, 0, 300},
       {"dplane yz", 30, 0, 300},
+      {"dplane min",150, 0, 300},
 
       {"nhits"   , 50, 0, 500},
       {"nhits xz", 50, 0, 500},
