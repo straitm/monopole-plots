@@ -116,7 +116,11 @@ static void optimize_graph(TGraph * & g)
       const double nlog10beta = log10(newg->GetY()[j]);
 
       const double dist = gdist(r2-nr2, log10beta - nlog10beta);
-      if(dist < 0.007){
+      const bool nearedge = r2 < 0.01;
+
+      // Have to allow for closer points at the edge so it is visually filled
+      // in where it needs to be.
+      if((!nearedge && dist < 0.007) || (nearedge && dist < 0.001)){
         pass = false;
         break;
       }
@@ -270,10 +274,11 @@ void draw_beta_r2(graphs_t const& g, std::string name)
   range->SetMarkerColor(kWhite);
   
   data->SetMarkerStyle(kFullCircle);
+  data->SetMarkerColor(kGray+1);
 
-  mc->SetMarkerStyle(kOpenCircle);
-  mc->SetMarkerColor(kRed);
-  mc->SetMarkerSize(0.7);
+  mc->SetMarkerStyle(kFullSquare);
+  mc->SetMarkerColor(kBlack);
+  mc->SetMarkerSize(0.9);
 
   optimize_graph(data);
 
