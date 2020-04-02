@@ -4,3 +4,16 @@ gaphistdata.txt
 *.swp
 *.swo
 data/
+*.o
+*.d
+*.so
+*.pcm
+coverage.pdf
+limit_plot.pdf
+scatter.pdf
+r2min-n-1.pdf
+fmax-n-1.pdf
+limit
+*histdat.txt
+scatter
+*ACLiC*
