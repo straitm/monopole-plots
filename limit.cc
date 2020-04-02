@@ -217,7 +217,7 @@ void draw_limits(const lim_t & lims)
   g.at("full")->SetLineStyle(kSolid);
   
   TAxis *x = g.at("half")->GetXaxis();
-  x->SetTitle("Monopole Velocity (#beta)");
+  x->SetTitle("Monopole speed (#beta)");
   x->SetTitleOffset(1.1);
   x->SetTitleSize(textsize);
   x->SetLabelSize(textsize);

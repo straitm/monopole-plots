@@ -265,7 +265,7 @@ void draw_beta_r2(graphs_t const& g, std::string name)
   y->SetTitleSize(textsize);
   y->SetLabelSize(textsize);
 
-  y->SetTitle("Velocity (#beta)");
+  y->SetTitle("Reconstructed speed (#beta)");
   y->SetTitleOffset(1.08);
   y->CenterTitle();
   y->SetRangeUser(1e-5, 1);
