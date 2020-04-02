@@ -218,21 +218,6 @@ void draw_beta_r2(graphs_t const& g, std::string name)
 
   TGraph* mc   = g.at("MC").at(name);
 
-  // TH2F *mc_heat = make_heat_map();
-  const int n_bins = 19;
-  double ybins[n_bins + 1];
-  
-  double low_bin = -5.0;
-  double high_bin = -0.25;
-  double delta_bin = (high_bin - low_bin) / n_bins;
-
-  for (int bin = 0; bin != n_bins + 1; ++bin)
-  {
-    double exponent = low_bin + bin * delta_bin + delta_bin / 2;
-    ybins[bin] = std::pow(10, exponent);
-  }
-  
-  TH2F* mc_heat = new TH2F("mc_heat", "", 100, 0, 1.0001, n_bins, ybins);
   /*
     TGraph::GetN() usually returns the number of points in the TGraph object.
     However, the way that we implemented it above, TGraph does not know
@@ -242,17 +227,6 @@ void draw_beta_r2(graphs_t const& g, std::string name)
       2. Use TGraph::Set() to tell it how many points it has once it 
          has been filled.
   */
-  int n_graph_points = mc->GetN();
-  for (int point = 0; point != n_graph_points; ++point)
-  {
-    double x, y;
-    mc->GetPoint(point, x, y);
-    mc_heat->Fill(x, y);
-  }
-
-  // only show the bins that have at least 10 entries
-  mc_heat->SetMinimum(10);
-  
   TAxis* x     = range->GetXaxis();
   TAxis* y     = range->GetYaxis();
 
@@ -284,7 +258,6 @@ void draw_beta_r2(graphs_t const& g, std::string name)
 
   save_data_graph(data);
 
-  std::string canvas_name_overlay = "Scatter_Overlay_" + name;
   range->Draw("AP");
   data->Draw("P");
   mc->Draw("p");
@@ -307,25 +280,6 @@ void draw_beta_r2(graphs_t const& g, std::string name)
   c1->SaveAs("scatter.pdf");
 }
 
-TH2F* make_heat_map()
-{
-  const int n_bins = 19;
-  double ybins[n_bins + 1];
-  
-  double low_bin = -5.0;
-  double high_bin = -0.25;
-  double delta_bin = (high_bin - low_bin) / n_bins;
-
-  for (int bin = 0; bin != n_bins + 1; ++bin)
-  {
-    double exponent = low_bin + bin * delta_bin + delta_bin / 2;
-    ybins[bin] = std::pow(10, exponent);
-  }
-  
-  return new TH2F("mc_heat", "", 40, 0, 1.0001, n_bins + 1, ybins);
-}
-
-
 int main()
 {
   gStyle->SetOptStat("nemroui");
@@ -344,8 +298,7 @@ int main()
       tree.second->SetBranchAddress(name, &(t[tree.first])[name]);
 
   graphs_t g;
-  for (auto const& tree : trees)
-  {
+  for (auto const& tree : trees) {
     std::string type = tree.first;
     (g[type])["Gap_vs_r2_Preselected"] = new TGraph;
     (g[type])["Beta_vs_r2_Preselected"] = new TGraph;
@@ -354,8 +307,7 @@ int main()
     (g[type])["Good_Reco"] = new TGraph;
   }
   
-  for (auto const& tree : trees)
-  {
+  for (auto const& tree : trees) {
     std::string type = tree.first;
     fill_graphs(g.at(type), t.at(type), tree.second, type);
   }
