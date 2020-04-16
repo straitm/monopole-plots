@@ -67,12 +67,10 @@ Limit_Info::Limit_Info(double beta) :
 }
 
 
-
 void Limit_Info::add_area(double area)
 {
   area_ += area;
 }
-
 
 
 double Limit_Info::beta() const
@@ -81,12 +79,10 @@ double Limit_Info::beta() const
 }
 
 
-
 double Limit_Info::efficiency() const
 {
   return n_signal_ / n_;
 }
-
 
 
 void Limit_Info::increment_counts(bool is_signal)
@@ -96,7 +92,6 @@ void Limit_Info::increment_counts(bool is_signal)
   if (is_signal)
     ++n_signal_;
 }
-
 
 
 double Limit_Info::limit(std::string coverage) const
@@ -127,12 +122,10 @@ double Limit_Info::limit(std::string coverage) const
 }
 
 
-
 double Limit_Info::log_beta() const
 {
   return std::log10(beta_);
 }
-
 
 
 double Limit_Info::n_monopoles_total() const
@@ -141,12 +134,10 @@ double Limit_Info::n_monopoles_total() const
 }
 
 
-
 double Limit_Info::n_monopoles_signal() const
 {
   return n_signal_;
 }
-
 
 
 void Limit_Info::print() const
@@ -157,7 +148,6 @@ void Limit_Info::print() const
 	    << std::setw(12) << limit("full")
 	    << std::endl;
 }
-
 
 
 double Limit_Info::projected_area_total() const
@@ -178,7 +168,7 @@ void draw_limits(const lim_t & lims)
   {
     const Limit_Info & info = lim.second;
 
-    if (info.log_beta() > -4.0 && info.log_beta() < -1.0)
+    if (info.log_beta() > -3.75 && info.log_beta() < -1.05)
     {
       if(info.limit("full")*1e15 > 10)
         printf("  $%3.1f$ & %02.0lf & %.0lf\\phantom{.0} \\\\\n",
@@ -207,8 +197,8 @@ void draw_limits(const lim_t & lims)
   can->SetTickx();
   can->SetTicky();
   
-  g.at("half")->Draw("APC");
-  g.at("full")->Draw("SAME PC");
+  g.at("half")->Draw("AC");
+  g.at("full")->Draw("SAME C");
   
   g.at("half")->SetMarkerStyle(kOpenSquare);
   g.at("full")->SetMarkerStyle(kFullSquare);
@@ -216,8 +206,11 @@ void draw_limits(const lim_t & lims)
   g.at("half")->SetLineStyle(kDashed);
   g.at("full")->SetLineStyle(kSolid);
   
+  g.at("half")->SetLineWidth(3);
+  g.at("full")->SetLineWidth(3);
+
   TAxis *x = g.at("half")->GetXaxis();
-  x->SetTitle("Monopole speed (#beta)");
+  x->SetTitle("log_{10}(Monopole speed (#beta))");
   x->SetTitleOffset(1.1);
   x->SetTitleSize(textsize);
   x->SetLabelSize(textsize);
@@ -225,22 +218,22 @@ void draw_limits(const lim_t & lims)
   x->SetNdivisions(6, 5, 0, true);
 
   TAxis *y = g.at("half")->GetYaxis();
-  y->SetTitle("90% C.L. Flux Limit (cm^{#minus2}s^{#minus1}sr^{#minus1})");
+  y->SetTitle("90% C.L. flux limit (cm^{#minus2}#kern[-0.5]{ }s^{#minus1}#kern[-0.5]{ }sr^{#minus1})");
   y->CenterTitle();
   y->SetTitleOffset(1.2);
   y->SetTitleSize(textsize);
   y->SetLabelSize(textsize);
   y->SetRangeUser(1e-16, 1e-12);
 
-  TLegend *l = new TLegend(0.3, 0.77, 0.71, 0.91);
+  TLegend *l = new TLegend(0.3, 0.27, 0.59, 0.41);
   l->SetTextSize(textsize);
   l->SetBorderSize(0);
   l->SetFillStyle(0);
   l->SetTextFont(42);
   l->AddEntry
-    (g.at("half"), "m > 5 #times 10^{8} GeV/c^{2} (#Omega = 2#pi)", "pl");
+    (g.at("half"), "m > 5 #times 10^{8}  GeV (#Omega = 2#pi)", "l");
   l->AddEntry
-    (g.at("full"), "m > 2 #times 10^{15} GeV/c^{2} (#Omega = 4#pi)", "pl");
+    (g.at("full"), "m > 2 #times 10^{15} GeV (#Omega = 4#pi)", "l");
   l->Draw();
 
   can->SaveAs("limit_plot.pdf");

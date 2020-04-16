@@ -26,7 +26,7 @@ const std::string MC_RECO_FILE_HIGH_ENERGY =
   "~/data/mono/180629_Monopole_Tree_MC_HighE.root";
 
 const std::string MC_RECO_FILE =
-  "data/191119_Monpole_Tree_MC_0.9dEdx.root";
+  "data/200227_Monpole_Tree_MC_0.9dEdx_Beta1e-4to1e-2.root";
 
 const std::string DATA_TRIG_FILE =
   "~/data/mono/150528_Monopole_Hist_Data_Gap30_Sparse10_withRate.root";
