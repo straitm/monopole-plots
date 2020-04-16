@@ -1,4 +1,4 @@
-all: coverage.pdf limit_plot.pdf scatter.pdf r2min-n-1.pdf fmax-n-1.pdf
+all: coverage.pdf limit_plot.pdf scatterr2.pdf scatterfmax.pdf r2min-n-1.pdf fmax-n-1.pdf
 
 coverage.pdf: coverage.cc
 	root -b -l -n -q coverage.cc
@@ -18,14 +18,17 @@ Event_Info.o: Event_Info.cc Constants.hh
 Event_List.o: Event_List.cc Constants.hh
 	g++ -Wall -Wextra -Werror `root-config --cflags` -c Event_List.cc
 
-scatter.pdf: scatter
-	./scatter
+scatterfmax.pdf: scatter
+	./scatter fmax
+
+scatterr2.pdf: scatter
+	./scatter r2
 
 scatter: scatter.o Event_Info.o Event_List.o
-	g++ `root-config --libs` scatter.o Event_List.o Event_Info.o -o scatter
+	g++ -O3 `root-config --libs` scatter.o Event_List.o Event_Info.o -o scatter
 
 scatter.o: scatter.cc Event_Info.hh Event_List.hh MFRoot.hh
-	g++ -Wall -Wextra -Werror `root-config --cflags` -c scatter.cc
+	g++ -O3 -Wall -Wextra -Werror `root-config --cflags` -c scatter.cc
 
 r2min-n-1.pdf fmax-n-1.pdf: compare_data_and_mc.cc Event_List.cc \
  Event_Info.cc Constants.hh Event_Info.hh Event_List.hh

@@ -23,6 +23,8 @@
 #include <iostream>
 #include <map>
 
+enum whatplot_t { plotr2, plotfmax, plotNOTHING };
+
 static double textsize = 0.057;
 
 typedef std::map<std::string, TGraph*> graph_t;
@@ -30,7 +32,10 @@ typedef std::map<std::string, graph_t> graphs_t;
 
 using namespace MFRoot;
 
-void fill_graphs(graph_t & g, tree_t const& t, TTree* tree, std::string type)
+#define USECACHE
+
+void fill_graphs(graph_t & g, tree_t const& t, TTree* tree,
+                 const std::string & type, const whatplot_t plotwhat)
 {
   std::cout << "Filling graphs for type: " << type << std::endl;
 
@@ -38,52 +43,60 @@ void fill_graphs(graph_t & g, tree_t const& t, TTree* tree, std::string type)
   if (type != DATA_SAMPLE_NAME)
     tree->SetBranchAddress("input_file_name", &input_file_name);
 
-  const int maxentries = type == "MC"? 10000: INT_MAX;
-
+  #ifdef USECACHE
   if(type == "Data"){
-    std::ifstream infile("nose_data.txt");
-    if(infile.is_open()){
-      printf("Reading nose data from text file and not filling anything else\n");
+    if(plotwhat == plotr2){
+      std::ifstream infilenose("nose_data.txt");
+      if(infilenose.is_open()){
+        printf("Reading nose data from text file and not filling anything else\n");
 
-      double x, y;
-      while(infile >> x >> y){
-        TGraph * G = g.at("Beta_vs_r2_Low_Gap");
-        G->SetPoint(G->GetN(), x, y);
+        double x, y;
+        while(infilenose >> x >> y){
+          TGraph * G = g.at("Beta_vs_r2_Low_Gap");
+          G->SetPoint(G->GetN(), x, y);
+        }
+        return;
       }
-      return;
+    }
+
+    if(plotwhat == plotfmax){
+      std::ifstream infilemouth("mouth_data.txt");
+      if(infilemouth.is_open()){
+        printf("Reading mouth data from text file and not filling anything else\n");
+
+        double x, y;
+        while(infilemouth >> x >> y){
+          TGraph * G = g.at("Beta_vs_Gap_Low_r2");
+          G->SetPoint(G->GetN(), x, y);
+        }
+        return;
+      }
     }
   }
+  #endif
 
   Event_List elist(type);
-  for (int entry = 0; entry < maxentries && entry < tree->GetEntries(); ++entry)
-  {
-    if (entry % 100000 == 0)
-      std::cout << "processing entry " << entry << " ..." << std::endl;
+  for(int64_t entry = 0; entry < tree->GetEntries(); ++entry){
+    if(entry % 100000 == 0) printf("processing entry %ld\n", entry);
 
     tree->GetEntry(entry);
+
     Event_Info e(t, *input_file_name);
 
     if (!e.beta_value_matches(MC_BETA_NAME)) continue;
-    
-    bool duplicate_event = elist.is_duplicate(e.run(), e.subrun(), e.event());
-    if(duplicate_event) continue;
+    if(elist.is_duplicate(e.run(), e.subrun(), e.event())) continue;
     if(!e.is_preselected_reco()) continue;
-    g.at("Gap_vs_r2_Preselected")->
-      SetPoint(g.at("Gap_vs_r2_Preselected")->GetN(), e.r2_min(), e.gap_max());
-    g.at("Beta_vs_r2_Preselected")->
-      SetPoint(g.at("Beta_vs_r2_Preselected")->GetN(), e.r2_min(), e.beta());
 
-    if (e.low_gap_max()){
+    // Limit the number of MC points to keep the plot uncluttered
+    if ((type != "MC" || entry < 10000) && e.low_gap_max()){
       TGraph * G = g.at("Beta_vs_r2_Low_Gap");
       G->SetPoint(G->GetN(), e.r2_min(), e.beta());
     }
 
-    // This will only work for MC graph, data graph will be empty.
-    if (e.high_mc_fraction())
-      g.at("Good_Reco")->SetPoint(g.at("Good_Reco")->GetN(), e.r2_min(), e.gap_max());
-
-    if (e.is_linear())
-      g.at("Signal")->SetPoint(g.at("Signal")->GetN(), e.r2_min(), e.gap_max());
+    if(e.high_r2_min()){
+      TGraph * G = g.at("Beta_vs_Gap_Low_r2");
+      G->SetPoint(G->GetN(), e.gap_max(), e.beta());
+    }
   }
 
   delete input_file_name;
@@ -91,6 +104,8 @@ void fill_graphs(graph_t & g, tree_t const& t, TTree* tree, std::string type)
 
 static double gdist(const double deltar2, const double deltalog10beta)
 {
+  // divide deltalog10beta by 5 because the range is from 10**-5
+  // to 1, except the y axis is shorter, so divide by 4.
   return hypot(deltar2, deltalog10beta/4.);
 }
 
@@ -115,12 +130,13 @@ static void optimize_graph(TGraph * & g)
       const double nr2 = newg->GetX()[j];
       const double nlog10beta = log10(newg->GetY()[j]);
 
+      // Distance in units of fraction of plot width
       const double dist = gdist(r2-nr2, log10beta - nlog10beta);
       const bool nearedge = r2 < 0.01;
 
       // Have to allow for closer points at the edge so it is visually filled
       // in where it needs to be.
-      if((!nearedge && dist < 0.007) || (nearedge && dist < 0.001)){
+      if((!nearedge && dist < 0.002) || (nearedge && dist < 0.001)){
         pass = false;
         break;
       }
@@ -165,22 +181,14 @@ void draw_gap_r2(graphs_t const& g, std::string name)
   mc->SetMarkerStyle(4);
   mc->SetMarkerColor(kRed);
   mc->SetMarkerSize(0.5);
-  
-#if 0
-  cans.new_canvas("Scatter Overlay - " + name, false, false, false, false, 2);
-  range->Draw("AP");
-  mc->Draw("SAME P");
-  data->Draw("SAME P");
-#endif
-
 }
 
-void save_data_graph(TGraph * g)
+void save_data_graph(TGraph * g, const char * const facepart)
 {
-  std::ofstream out("nose_data.txt");
+  std::ofstream out(Form("%s_data.txt", facepart));
 
   if(!out.is_open()){
-    fprintf(stderr, "Could not open nose_data.txt for writing\n");
+    fprintf(stderr, "Could not open %s_data.txt for writing\n", facepart);
     return; 
   }
 
@@ -188,8 +196,7 @@ void save_data_graph(TGraph * g)
     out << g->GetX()[i] << " " << g->GetY()[i] << "\n";
 }
 
-// The "nose plot"
-void draw_beta_r2(graphs_t const& g, std::string name)
+void draw_beta_fmax(graphs_t const& g, const std::string & name)
 {
   TCanvas * c1 = new TCanvas;
   
@@ -204,11 +211,7 @@ void draw_beta_r2(graphs_t const& g, std::string name)
   c1->SetTickx();
   c1->SetTicky();
   
-  // For some reason, SetRangeUser does not work, so I am creating this
-  // two-point grap to set the range.
-  TGraph* range = new TGraph(2);
-  range->SetPoint(0, 0, 0);
-  range->SetPoint(1, 1, 1);
+  TH2D dum("dum", "", 1, 0, 1, 1, 1e-5, 1);
 
   TGraph* data = dynamic_cast<TGraph *>(g.at("Data").at(name));
   if(data == NULL){
@@ -216,36 +219,92 @@ void draw_beta_r2(graphs_t const& g, std::string name)
     _exit(1);
   }
 
-  TGraph* mc   = g.at("MC").at(name);
+  save_data_graph(data, "mouth");
 
-  /*
-    TGraph::GetN() usually returns the number of points in the TGraph object.
-    However, the way that we implemented it above, TGraph does not know
-    how many points it contains, so it simply returns TGraph::GetMaxSize().
-    There are two ways to fix this:
-      1. Fill the TH2F object above without using TGraph for MC.
-      2. Use TGraph::Set() to tell it how many points it has once it 
-         has been filled.
-  */
-  TAxis* x     = range->GetXaxis();
-  TAxis* y     = range->GetYaxis();
+  TGraph* mc = g.at("MC").at(name);
 
-  x->SetTitle("Correlation coefficient, r_{min}^{2}");
-  x->CenterTitle();
-  x->SetRangeUser(0, 1);
+  TAxis* x = dum.GetXaxis();
+  TAxis* y = dum.GetYaxis();
+
+  x->SetTitle("Largest gap, f_{max}");
+  y->SetTitle("Reconstructed speed (#beta)");
 
   x->SetTitleSize(textsize);
   x->SetLabelSize(textsize);
   y->SetTitleSize(textsize);
   y->SetLabelSize(textsize);
-
-  y->SetTitle("Reconstructed speed (#beta)");
-  y->SetTitleOffset(1.08);
+  x->CenterTitle();
   y->CenterTitle();
-  y->SetRangeUser(1e-5, 1);
 
-  range->SetTitle("");
-  range->SetMarkerColor(kWhite);
+  y->SetTitleOffset(1.08);
+  x->SetTitleOffset(1.04);
+
+  data->SetMarkerStyle(kFullCircle);
+  data->SetMarkerColor(kGray+1);
+
+  mc->SetMarkerStyle(kFullSquare);
+  mc->SetMarkerColor(kBlack);
+  mc->SetMarkerSize(0.9);
+
+  dum.Draw();
+  data->Draw("P");
+  mc->Draw("p");
+
+  TLine *line = new TLine(0.2, 1e-5, 0.2, 1e-2);
+  line->SetLineColor(kGreen + 2);
+  line->SetLineWidth(3);
+  line->SetLineStyle(2);
+  line->Draw();
+
+  TLine *line2 = new TLine(0.2, 1e-2, 0, 1e-2);
+  line2->SetLineColor(kGreen + 2);
+  line2->SetLineWidth(3);
+  line2->SetLineStyle(2);
+  line2->Draw();
+
+  c1->SaveAs("scatterfmax.pdf");
+}
+
+void draw_beta_r2(graphs_t const& g, const std::string & name)
+{
+  TCanvas * c1 = new TCanvas;
+  
+  c1->SetCanvasSize(600, 400);
+  c1->SetRightMargin(0.025);
+  c1->SetTopMargin(0.03);
+  c1->SetLeftMargin(0.14);
+  c1->SetBottomMargin(0.14);
+
+  c1->SetLogy();
+  c1->SetLogz();
+  c1->SetTickx();
+  c1->SetTicky();
+  
+  TH2D dum("dum", "", 1, 0, 1, 1, 1e-5, 1);
+
+  TGraph* data = dynamic_cast<TGraph *>(g.at("Data").at(name));
+  if(data == NULL){
+    fprintf(stderr, "data graph doesn't exist\n");
+    _exit(1);
+  }
+
+  TGraph* mc = g.at("MC").at(name);
+
+  TAxis* x = dum.GetXaxis();
+  TAxis* y = dum.GetYaxis();
+
+  x->SetTitle("Correlation coefficient, r_{min}^{2}");
+  y->SetTitle("Reconstructed speed (#beta)");
+
+  x->CenterTitle();
+  y->CenterTitle();
+  x->SetTitleSize(textsize);
+  x->SetLabelSize(textsize);
+  y->SetTitleSize(textsize);
+  y->SetLabelSize(textsize);
+
+  y->SetTitleOffset(1.08);
+  x->SetTitleOffset(1.04);
   
   data->SetMarkerStyle(kFullCircle);
   data->SetMarkerColor(kGray+1);
@@ -256,33 +315,43 @@ void draw_beta_r2(graphs_t const& g, std::string name)
 
   optimize_graph(data);
 
-  save_data_graph(data);
+  save_data_graph(data, "nose");
 
-  range->Draw("AP");
+  dum.Draw();
   data->Draw("P");
   mc->Draw("p");
 
-  if (name.find("Low_Gap") != std::string::npos)
-  {
-    TLine *line = new TLine(0.95, 1e-5, 0.95, 1e-2);
-    line->SetLineColor(kGreen + 2);
-    line->SetLineWidth(3);
-    line->SetLineStyle(2);
-    line->Draw();
+  TLine *line = new TLine(0.95, 1e-5, 0.95, 1e-2);
+  line->SetLineColor(kGreen + 2);
+  line->SetLineWidth(3);
+  line->SetLineStyle(2);
+  line->Draw();
 
-    TLine *line2 = new TLine(0.95, 1e-2, 1, 1e-2);
-    line2->SetLineColor(kGreen + 2);
-    line2->SetLineWidth(3);
-    line2->SetLineStyle(2);
-    line2->Draw();
-  }
+  TLine *line2 = new TLine(0.95, 1e-2, 1, 1e-2);
+  line2->SetLineColor(kGreen + 2);
+  line2->SetLineWidth(3);
+  line2->SetLineStyle(2);
+  line2->Draw();
 
-  c1->SaveAs("scatter.pdf");
+  c1->SaveAs("scatterr2.pdf");
 }
 
-int main()
+int main(int argc, char ** argv)
 {
-  gStyle->SetOptStat("nemroui");
+  gStyle->SetOptStat(0);
+
+  if(argc != 2){
+    fprintf(stderr, "Tell me either r2 or fmax\n");
+    exit(1);
+  }
+
+  const enum whatplot_t plotwhat = !strcmp(argv[1], "r2")?plotr2
+                                  :!strcmp(argv[1], "fmax")?plotfmax
+                                  :plotNOTHING;
+  if(plotwhat == plotNOTHING){
+    fprintf(stderr, "Eh, sonny?  Tell me either r2 or fmax\n");
+    exit(1);
+  }
 
   std::map<std::string, TFile*> files;
   files[DATA_SAMPLE_NAME] = new TFile(DATA_RECO_FILE.c_str(), "read");
@@ -300,17 +369,15 @@ int main()
   graphs_t g;
   for (auto const& tree : trees) {
     std::string type = tree.first;
-    (g[type])["Gap_vs_r2_Preselected"] = new TGraph;
-    (g[type])["Beta_vs_r2_Preselected"] = new TGraph;
     (g[type])["Beta_vs_r2_Low_Gap"] = new TGraph;
-    (g[type])["Signal"] = new TGraph;
-    (g[type])["Good_Reco"] = new TGraph;
+    (g[type])["Beta_vs_Gap_Low_r2"] = new TGraph;
   }
   
   for (auto const& tree : trees) {
-    std::string type = tree.first;
-    fill_graphs(g.at(type), t.at(type), tree.second, type);
+    const std::string type = tree.first;
+    fill_graphs(g.at(type), t.at(type), tree.second, type, plotwhat);
   }
 
-  draw_beta_r2(g, "Beta_vs_r2_Low_Gap");
+  if     (plotwhat == plotr2  ) draw_beta_r2(g,  "Beta_vs_r2_Low_Gap");
+  else if(plotwhat == plotfmax) draw_beta_fmax(g,"Beta_vs_Gap_Low_r2");
 }
