@@ -10,7 +10,7 @@ data/
 *.pcm
 coverage.pdf
 limit_plot.pdf
-scatter.pdf
+scatterr2.pdf
 r2min-n-1.pdf
 fmax-n-1.pdf
 limit
@@ -18,3 +18,4 @@ limit
 scatter
 *ACLiC*
 mouth_data.txt
+scatterfmax.pdf
