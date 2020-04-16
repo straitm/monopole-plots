@@ -199,19 +199,23 @@ void save_data_graph(TGraph * g, const char * const facepart)
 void draw_beta_fmax(graphs_t const& g, const std::string & name)
 {
   TCanvas * c1 = new TCanvas;
+
+  const double rat = 400/267.2;
   
-  c1->SetCanvasSize(600, 400);
+  c1->SetCanvasSize(600, 400/rat);
   c1->SetRightMargin(0.025);
-  c1->SetTopMargin(0.03);
+  c1->SetTopMargin(0.03 * rat);
   c1->SetLeftMargin(0.14);
-  c1->SetBottomMargin(0.14);
+  c1->SetBottomMargin(0.14 * rat);
 
   c1->SetLogy();
   c1->SetLogz();
   c1->SetTickx();
   c1->SetTicky();
+
+  const double ymin = 1e-4;
   
-  TH2D dum("dum", "", 1, 0, 1, 1, 1e-5, 1);
+  TH2D dum("dum", "", 1, 0, 1, 1, ymin, 1e-1);
 
   TGraph* data = dynamic_cast<TGraph *>(g.at("Data").at(name));
   if(data == NULL){
@@ -227,16 +231,16 @@ void draw_beta_fmax(graphs_t const& g, const std::string & name)
   TAxis* y = dum.GetYaxis();
 
   x->SetTitle("Largest gap, f_{max}");
-  y->SetTitle("Reconstructed speed (#beta)");
+  y->SetTitle("Reconstructed speed (#beta)  ");
 
-  x->SetTitleSize(textsize);
-  x->SetLabelSize(textsize);
-  y->SetTitleSize(textsize);
-  y->SetLabelSize(textsize);
+  x->SetTitleSize(textsize*rat);
+  x->SetLabelSize(textsize*rat);
+  y->SetTitleSize(textsize*rat);
+  y->SetLabelSize(textsize*rat);
   x->CenterTitle();
   y->CenterTitle();
 
-  y->SetTitleOffset(1.08);
+  y->SetTitleOffset(1.08/rat);
   x->SetTitleOffset(1.04);
 
   data->SetMarkerStyle(kFullCircle);
@@ -250,7 +254,7 @@ void draw_beta_fmax(graphs_t const& g, const std::string & name)
   data->Draw("P");
   mc->Draw("p");
 
-  TLine *line = new TLine(0.2, 1e-5, 0.2, 1e-2);
+  TLine *line = new TLine(0.2, ymin, 0.2, 1e-2);
   line->SetLineColor(kGreen + 2);
   line->SetLineWidth(3);
   line->SetLineStyle(2);
