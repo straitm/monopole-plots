@@ -15,12 +15,16 @@
 #include <TNtuple.h>
 #include <TStyle.h>
 #include <TTree.h>
+#include <TGaxis.h>
 
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
 
 const double textsize = 0.057;
+
+const int nxbin = 139;
+const double xmin = 4, xmax = 18;
 
 TCanvas *c1 = new TCanvas("c1", "Coverage");
 
@@ -38,7 +42,7 @@ void fill_histogram(TNtuple *ntuple, TH2F *hist, bool verbose)
   {
     ntuple->GetEntry(i);
     
-    int bin = hist->FindBin(TMath::Log10(mass), TMath::Log10(beta));
+    const int bin = hist->FindBin(log10(mass), beta);
     // the only angles that we consider here are:
     //   * angle = 0 (traversing entire planet)
     //   * angle = 90 (entering detector horizontally)
@@ -61,7 +65,7 @@ void fill_histogram(TNtuple *ntuple, TH2F *hist, bool verbose)
     	   current_beta /= 1.1220184543)
       {
     	int bin_2 =
-    	  hist->FindBin(TMath::Log10(mass), TMath::Log10(current_beta));
+    	  hist->FindBin(log10(mass), current_beta);
         hist->SetBinContent(bin_2, content);
       }
     } else {
@@ -70,7 +74,7 @@ void fill_histogram(TNtuple *ntuple, TH2F *hist, bool verbose)
     	   current_beta /= 1.1220184543)
       {
     	int bin_2 =
-    	  hist->FindBin(TMath::Log10(mass), TMath::Log10(current_beta));
+    	  hist->FindBin(log10(mass), current_beta);
         hist->SetBinContent(bin_2, content);
       }
     }
@@ -88,21 +92,26 @@ void draw(TH2F* h)
   TAxis *y = h->GetYaxis();
   TAxis *z = h->GetZaxis();
 
+  const double drawxmin = xmin + 4 * (xmax-xmin)/nxbin;
+
   x->SetTitle("log_{10}(Monopole mass (GeV))");
   x->SetTitleOffset(1.1);
   x->SetTitleSize(textsize);
   x->SetLabelSize(textsize);
   x->CenterTitle();
   x->SetNdivisions(15, 0, 0, true);
-  x->SetRangeUser(4.5, 18);
+  x->SetRangeUser(drawxmin, 18);
   
-  y->SetTitle("log_{10}#beta");
-  y->SetTitleOffset(0.9);
+  y->SetTitle("Monopole speed (#beta)");
+  y->SetTitleOffset(1.0);
   y->SetTitleSize(textsize);
   y->SetLabelSize(textsize);
   y->CenterTitle();
   y->SetNdivisions(5, 0, 0, true);
-  y->SetRangeUser(-4, 0);
+
+  const double ymin = -4, ymax = 0;
+
+  y->SetRangeUser(ymin, ymax);
 
   z->SetRangeUser(0, 1.6);
 
@@ -134,34 +143,34 @@ void draw(TH2F* h)
   region_labels.SetTextFont(42);
   region_labels.SetTextSize(textsize);
   region_labels.SetTextAlign(22);
-  region_labels.DrawLatex(8.8 , -0.5, "#Omega = 2#pi");
-  region_labels.DrawLatex(15.0, -0.5, "#Omega = 4#pi");
+  region_labels.DrawLatex(8.8 , pow(10, -0.5), "#Omega = 2#pi");
+  region_labels.DrawLatex(15.0, pow(10, -0.5), "#Omega = 4#pi");
 
   // add slow monopole beta range lines
   TLine line;
   line.SetLineColor(kBlack);
   line.SetLineStyle(kDashed);
   line.SetLineWidth(3);
-  line.DrawLine(4.4, -2.1, 18, -2.1);
-  line.DrawLine(4.4, -3.5, 18, -3.5);
-  line.DrawLine(log10(5e8) , -3.5, log10(5e8) , -2.1);
-  line.DrawLine(log10(2e15), -3.5, log10(2e15), -2.1);
+  line.DrawLine(4.4, pow(10, -2.1), 18, pow(10, -2.1));
+  line.DrawLine(4.4, pow(10, -3.5), 18, pow(10, -3.5));
+  line.DrawLine(log10(5e8) , pow(10, -3.5), log10(5e8), pow(10, -2.1));
+  line.DrawLine(log10(2e15), pow(10, -3.5), log10(2e15), pow(10, -2.1));
 
-  const double arrowy = (-2.1 -3.5)/2, arrowdx = 1.0;
-  TArrow * ahalf = new TArrow(log10(5e8), arrowy, log10(5e8)+arrowdx, arrowy, 0.02, "|>");
-  ahalf->SetLineWidth(2);
+  const double arrowy = pow(10, (-2.1 -3.5)/2), arrowdx = 1.0;
+  TArrow * ahalf = new TArrow(log10(5e8), arrowy, log10(5e8)+arrowdx, arrowy, 0.018, "|>");
+  ahalf->SetLineWidth(3);
   ahalf->Draw();
 
-  TArrow * afull = new TArrow(log10(2e15), arrowy, log10(2e15)+arrowdx, arrowy, 0.02, "|>");
-  afull->SetLineWidth(2);
+  TArrow * afull = new TArrow(log10(2e15), arrowy, log10(2e15)+arrowdx, arrowy, 0.018, "|>");
+  afull->SetLineWidth(3);
   afull->Draw();
 
   TLatex line_labels;
   line_labels.SetTextSize(textsize);
   line_labels.SetTextFont(42);
   line_labels.SetTextAlign(22);
-  line_labels.DrawLatex(18.8, -2.1 + 0.02, "#minus2.1");
-  line_labels.DrawLatex(18.8, -3.5 + 0.02, "#minus3.5");
+  line_labels.DrawLatex(18.8, pow(10, -2.1 + 0.02), "10^{#minus2.1}");
+  line_labels.DrawLatex(18.8, pow(10, -3.5 + 0.02), "10^{#minus3.5}");
 }
 
 
@@ -174,9 +183,18 @@ void coverage()
   
   TNtuple *ntuple = dynamic_cast<TNtuple*>(file->Get("ntuple"));
 
+  const int nybin = 40;
+  double logymin = -4, logymax = 0;
+  double ybin[nybin] = { 0 };
+  for(int i = 0; i <= nybin; i++)
+    ybin[i] = pow(10, logymin + (logymax - logymin)/nybin * i);
+
+  c1->SetLogy();
+  
+
   TH2F *hist= new TH2F("accessible_region", "",
-		       139, 4, 18,
-		       40, -4,  0);
+		       nxbin, xmin, xmax,
+		       nybin, ybin);
 
   fill_histogram(ntuple, hist, false);
 
