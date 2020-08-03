@@ -25,7 +25,9 @@
 
 enum whatplot_t { plotr2, plotfmax, plotNOTHING };
 
-static double textsize = 0.057;
+static const double textsize = 0.057;
+static const int datacolor = kGray+1;
+static const int mccolor = kRed+2;
 
 typedef std::map<std::string, TGraph*> graph_t;
 typedef std::map<std::string, graph_t> graphs_t;
@@ -135,8 +137,9 @@ static void optimize_graph(TGraph * & g)
       const bool nearedge = r2 < 0.01;
 
       // Have to allow for closer points at the edge so it is visually filled
-      // in where it needs to be.
-      if((!nearedge && dist < 0.002) || (nearedge && dist < 0.001)){
+      // in where it needs to be.  Otherwise, it makes sense for the spacing
+      // to be just somewhat smaller than the marker diameter.
+      if((!nearedge && dist < 0.005) || (nearedge && dist < 0.003)){
         pass = false;
         break;
       }
@@ -244,10 +247,10 @@ void draw_beta_fmax(graphs_t const& g, const std::string & name)
   x->SetTitleOffset(1.04);
 
   data->SetMarkerStyle(kFullCircle);
-  data->SetMarkerColor(kGray+1);
+  data->SetMarkerColor(datacolor);
 
   mc->SetMarkerStyle(kFullSquare);
-  mc->SetMarkerColor(kBlack);
+  mc->SetMarkerColor(mccolor);
   mc->SetMarkerSize(0.9);
 
   dum.Draw();
@@ -302,6 +305,8 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
 
   x->CenterTitle();
   y->CenterTitle();
+  x->SetTickSize(0.025);
+  y->SetTickSize(0.025);
   x->SetTitleSize(textsize);
   x->SetLabelSize(textsize);
   y->SetTitleSize(textsize);
@@ -311,10 +316,10 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
   x->SetTitleOffset(1.04);
   
   data->SetMarkerStyle(kFullCircle);
-  data->SetMarkerColor(kGray+1);
+  data->SetMarkerColor(datacolor);
 
   mc->SetMarkerStyle(kFullSquare);
-  mc->SetMarkerColor(kBlack);
+  mc->SetMarkerColor(mccolor);
   mc->SetMarkerSize(0.9);
 
   optimize_graph(data);
@@ -336,6 +341,8 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
   line2->SetLineWidth(3);
   line2->SetLineStyle(2);
   line2->Draw();
+
+  c1->RedrawAxis();
 
   c1->SaveAs("scatterr2.pdf");
 }
