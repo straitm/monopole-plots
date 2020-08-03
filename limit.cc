@@ -169,8 +169,8 @@ void draw_limits(const lim_t & lims)
   if(infile.is_open()){
     double logbeta, half, full;
     while(infile >> logbeta >> half >> full){
-      g["half"]->SetPoint(g["half"]->GetN(), logbeta, half);
-      g["full"]->SetPoint(g["full"]->GetN(), logbeta, full);
+      g["half"]->SetPoint(g["half"]->GetN(), pow(10, logbeta), half);
+      g["full"]->SetPoint(g["full"]->GetN(), pow(10, logbeta), full);
     }
   }
   else{
@@ -193,8 +193,8 @@ void draw_limits(const lim_t & lims)
           printf("  $%3.1f$ & %02.0lf & \\phantom{0}%.1lf \\\\\n",
             info.log_beta(), info.limit("half")*1e15, info.limit("full")*1e15);
 
-        g.at("half")->SetPoint(n_point, info.log_beta(), info.limit("half"));
-        g.at("full")->SetPoint(n_point, info.log_beta(), info.limit("full"));
+        g.at("half")->SetPoint(n_point, info.beta(), info.limit("half"));
+        g.at("full")->SetPoint(n_point, info.beta(), info.limit("full"));
         ++n_point;
 
         outfile << info.log_beta() << " " << info.limit("half") << " "
@@ -216,7 +216,9 @@ void draw_limits(const lim_t & lims)
   can->SetLogy();
   can->SetTickx();
 
-  TH2D dum("dum", "", 1, -4.4, 0, 1, 1e-18, 1e-12);
+  can->SetLogx();
+
+  TH2D dum("dum", "", 1, pow(10, -4.4), 1, 1, 1e-18, 1e-12);
   
   dum.Draw();
   g.at("half")->Draw("lf");
@@ -230,7 +232,7 @@ void draw_limits(const lim_t & lims)
   g.at("full")->SetLineWidth(2);
 
   TAxis *x = dum.GetXaxis();
-  x->SetTitle("log_{10}(Monopole speed (#beta))");
+  x->SetTitle("Monopole speed (#beta)");
   x->SetTitleSize(textsize);
   x->SetLabelSize(textsize);
   x->CenterTitle();
@@ -242,6 +244,7 @@ void draw_limits(const lim_t & lims)
   y->CenterTitle();
   y->SetTitleOffset(1.15);
   y->SetLabelOffset(0.001);
+  x->SetTitleOffset(1.12);
   y->SetTitleSize(textsize);
   y->SetLabelSize(textsize);
   y->SetRangeUser(1e-16, 1e-12);
@@ -272,10 +275,10 @@ void draw_limits(const lim_t & lims)
   l->Draw();
 
   TGraph slimlight;
-  slimlight.SetPoint(slimlight.GetN(),           0, 1e-11);
-  slimlight.SetPoint(slimlight.GetN(), log10(0.05), 1e-11);
-  slimlight.SetPoint(slimlight.GetN(), log10(0.05), 1.3e-15);
-  slimlight.SetPoint(slimlight.GetN(),           0, 1.3e-15);
+  slimlight.SetPoint(slimlight.GetN(), 1.00, 1e-11);
+  slimlight.SetPoint(slimlight.GetN(), 0.05, 1e-11);
+  slimlight.SetPoint(slimlight.GetN(), 0.05, 1.3e-15);
+  slimlight.SetPoint(slimlight.GetN(), 1.00, 1.3e-15);
 
   slimlight.SetLineWidth(3);
 
@@ -284,8 +287,8 @@ void draw_limits(const lim_t & lims)
   slimlight.Draw("lf");
  
   TGraph slimheavy;
-  slimheavy.SetPoint(slimheavy.GetN(), log10(0.05), 0.65e-15);
-  slimheavy.SetPoint(slimheavy.GetN(),           0, 0.65e-15);
+  slimheavy.SetPoint(slimheavy.GetN(), 0.05, 0.65e-15);
+  slimheavy.SetPoint(slimheavy.GetN(), 0.00, 0.65e-15);
 
   slimheavy.SetLineWidth(2);
 
@@ -317,47 +320,47 @@ void draw_limits(const lim_t & lims)
 
   // Extracted from the plot in the MACRO paper
   TGraph macroheavy;
-  macroheavy.SetPoint(macroheavy.GetN(), log10(4.e-05), 3.111271086997062e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(4.63003e-05), 2.7495747867546176e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(5.05009e-05), 2.559717811217955e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(6.11617e-05), 2.3293333163141835e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(8.0847e-05), 2.1544346900318954e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(9.05598e-05), 2.1128017944843972e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0001), 2.0991037201085632e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0001), 1.5843778311510706e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00011), 1.5869563145973281e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00011), 1.272095668992179e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00012), 1.2700287704932164e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00014), 1.29084978338489e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00018), 1.3597985579403563e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00018), 1.3356916613034106e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00020), 1.3686721650920103e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.000256597), 1.4701880261868488e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.000301783), 1.5792334259956746e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.000541903), 1.5588223004671087e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.000607082), 1.553760872996211e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.000735782), 1.5588223004671087e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0009235), 1.566445373014912e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0012), 1.5715481206644581e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0012), 1.4324301262444822e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00165697), 1.3911103503173643e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00298785), 1.3400427210994613e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00361065), 1.6234988203559148e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00404453), 1.5973122800602588e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.005), 1.5689946724208885e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.005), 1.6608827826277233e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.006), 1.63143817898912e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.00689217), 1.59212587731796e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0100762), 1.5237355654616932e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0203527), 1.4441241135747835e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0301526), 1.4116190614769622e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.044674), 1.3911103503173643e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0622653), 1.3820912681235753e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.0998089), 1.3776036785441396e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.100726), 1.4535480021259694e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.22115), 1.4488283956730566e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(0.659272), 1.44647434219323e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), log10(1), 1.44647434219323e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (4.e-05), 3.111271086997062e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (4.63003e-05), 2.7495747867546176e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (5.05009e-05), 2.559717811217955e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (6.11617e-05), 2.3293333163141835e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (8.0847e-05), 2.1544346900318954e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (9.05598e-05), 2.1128017944843972e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0001), 2.0991037201085632e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0001), 1.5843778311510706e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00011), 1.5869563145973281e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00011), 1.272095668992179e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00012), 1.2700287704932164e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00014), 1.29084978338489e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00018), 1.3597985579403563e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00018), 1.3356916613034106e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00020), 1.3686721650920103e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.000256597), 1.4701880261868488e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.000301783), 1.5792334259956746e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.000541903), 1.5588223004671087e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.000607082), 1.553760872996211e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.000735782), 1.5588223004671087e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0009235), 1.566445373014912e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0012), 1.5715481206644581e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0012), 1.4324301262444822e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00165697), 1.3911103503173643e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00298785), 1.3400427210994613e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00361065), 1.6234988203559148e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00404453), 1.5973122800602588e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.005), 1.5689946724208885e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.005), 1.6608827826277233e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.006), 1.63143817898912e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.00689217), 1.59212587731796e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0100762), 1.5237355654616932e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0203527), 1.4441241135747835e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0301526), 1.4116190614769622e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.044674), 1.3911103503173643e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0622653), 1.3820912681235753e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.0998089), 1.3776036785441396e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.100726), 1.4535480021259694e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.22115), 1.4488283956730566e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (0.659272), 1.44647434219323e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (1), 1.44647434219323e-16);
 
   TGraph macrolight;
   for(int i = 0; i < macroheavy.GetN(); i++)
@@ -404,11 +407,11 @@ void draw_limits(const lim_t & lims)
   }
 
   TGraph icecube;
-  icecube.SetPoint(icecube.GetN(), log10(0.995), 1e-11); // XXX
-  icecube.SetPoint(icecube.GetN(), log10(0.8), 1e-11); // XXX
-  icecube.SetPoint(icecube.GetN(), log10(0.8), 5.57e-18);
-  icecube.SetPoint(icecube.GetN(), log10(0.9), 3.56e-18);
-  icecube.SetPoint(icecube.GetN(), log10(0.995), 3.38e-18);
+  icecube.SetPoint(icecube.GetN(), (0.995), 1e-11); // just for drawing
+  icecube.SetPoint(icecube.GetN(), (0.8), 1e-11); // just for drawing
+  icecube.SetPoint(icecube.GetN(), (0.8), 5.57e-18);
+  icecube.SetPoint(icecube.GetN(), (0.9), 3.56e-18);
+  icecube.SetPoint(icecube.GetN(), (0.995), 3.38e-18);
   icecube.SetFillStyle(1001);
   icecube.SetFillColorAlpha(kRed, 0.3);
   icecube.Draw("lf");
