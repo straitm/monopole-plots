@@ -473,6 +473,8 @@ void draw_r2(hists_t const& h, std::string hist_name)
 
   x->SetTitleOffset(1.06);
   y->SetTitleOffset(1.1);
+  x->SetLabelOffset(0.011);
+  y->SetLabelOffset(0.015);
   
   mc->SetLineColor(kRed);
   mc->SetMarkerColor(kRed);
@@ -613,6 +615,8 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
   x->SetDecimals();
   x->SetTitleOffset(1.06);
   y->SetTitleOffset(1.1);
+  x->SetLabelOffset(0.011);
+  y->SetLabelOffset(0.015);
 
   data->Draw("hist");
   mc->Draw("SAME hist ][");
