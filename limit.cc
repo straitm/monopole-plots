@@ -227,8 +227,8 @@ void draw_limits(const lim_t & lims)
 #endif
   
   g.at("half")->SetLineWidth(3);
-  g.at("half")->SetFillStyle(1001);
-  g.at("half")->SetFillColorAlpha(kBlack, 0.3);
+  g.at("half")->SetFillStyle(3003);
+  g.at("half")->SetFillColor(kBlack);
   g.at("full")->SetLineWidth(2);
 
   TAxis *x = dum.GetXaxis();
@@ -252,8 +252,9 @@ void draw_limits(const lim_t & lims)
   x->SetTickSize(0.025); // Smaller than default (0.03)
   y->SetTickSize(0.025); 
 
-  TLegend *l = new TLegend(0.30,      0.57,
-                           0.30+0.15, 0.57 +0.12
+  const double thisworkheight = 0.59;
+  TLegend *l = new TLegend(0.30,      thisworkheight,
+                           0.30+0.15, thisworkheight +0.12
    #ifdef DRAWHEAVY
     + 0.06
    #endif
@@ -282,8 +283,8 @@ void draw_limits(const lim_t & lims)
 
   slimlight.SetLineWidth(3);
 
-  slimlight.SetFillStyle(1001);
-  slimlight.SetFillColorAlpha(kGreen+2, 0.3);
+  slimlight.SetFillStyle(3354);
+  slimlight.SetFillColor(kGreen+2);
   slimlight.Draw("lf");
  
   TGraph slimheavy;
@@ -297,8 +298,10 @@ void draw_limits(const lim_t & lims)
 #endif
 
   {
-    TLegend *l = new TLegend(0.59,      0.49,
-                             0.59+0.15, 0.49+0.12
+    const double slimy = 0.49,
+                 slimx = 0.60;
+    TLegend *l = new TLegend(slimx,      slimy,
+                             slimx+0.15, slimy+0.12
                              #ifdef DRAWHEAVY
                                + 0.06
                              #endif
@@ -385,8 +388,10 @@ void draw_limits(const lim_t & lims)
   macrolight.Draw("lf");
 
   {
-    TLegend *l = new TLegend(0.30,      0.32,
-                             0.30+0.15, 0.32+0.12
+    const double macrox = 0.30,
+                 macroy = 0.34;
+    TLegend *l = new TLegend(macrox,      macroy,
+                             macrox+0.15, macroy+0.12
                              #ifdef DRAWHEAVY
                                + 0.06
                              #endif
@@ -412,16 +417,19 @@ void draw_limits(const lim_t & lims)
   icecube.SetPoint(icecube.GetN(), (0.8), 5.57e-18);
   icecube.SetPoint(icecube.GetN(), (0.9), 3.56e-18);
   icecube.SetPoint(icecube.GetN(), (0.995), 3.38e-18);
-  icecube.SetFillStyle(1001);
-  icecube.SetFillColorAlpha(kRed, 0.3);
+
+  icecube.SetFillStyle(3345);
+  icecube.SetFillColor(kRed);
   icecube.Draw("lf");
 
   icecube.SetLineWidth(3);
   icecube.SetLineStyle(kSolid);
 
   {
-    TLegend *l = new TLegend(0.76,      0.15,
-                             0.76+0.15, 0.15+0.12);
+    const double icex = 0.78,
+                 icey = 0.14;
+    TLegend *l = new TLegend(icex,      icey,
+                             icex+0.15, icey+0.12);
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
