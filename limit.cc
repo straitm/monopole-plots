@@ -12,6 +12,7 @@
 #include <TLegend.h>
 #include <TTree.h>
 #include <TStyle.h>
+#include <TArrow.h>
 
 #include <iostream>
 #include <fstream>
@@ -21,6 +22,8 @@
 
 #include <cmath>
 #include <iomanip>
+
+#define DRAWHEAVY
 
 using namespace MFRoot;
 
@@ -214,21 +217,19 @@ void draw_limits(const lim_t & lims)
   can->SetFrameLineWidth(2);
 
   can->SetLogy();
-  can->SetTickx();
 
   can->SetLogx();
 
-  TH2D dum("dum", "", 1, pow(10, -4.4), 1, 1, 1e-18, 1e-12);
+  const double xmin = pow(10, -4.4);
+
+  TH2D dum("dum", "", 1, xmin, 1, 1, 1e-18, 1e-12);
   
   dum.Draw();
-  g.at("half")->Draw("lf");
-#ifdef DRAWHEAVY
-  g.at("full")->Draw("c");
-#endif
   
-  g.at("half")->SetLineWidth(3);
-  g.at("half")->SetFillStyle(3003);
-  g.at("half")->SetFillColor(kBlack);
+  g.at("half")->SetLineWidth(2);
+  g.at("half")->SetFillStyle(1001);
+  g.at("half")->SetFillColor(kYellow);
+  g.at("half")->SetLineColor(kBlack);
   g.at("full")->SetLineWidth(2);
 
   TAxis *x = dum.GetXaxis();
@@ -252,28 +253,21 @@ void draw_limits(const lim_t & lims)
   x->SetTickSize(0.025); // Smaller than default (0.03)
   y->SetTickSize(0.025); 
 
-  const double thisworkheight = 0.59;
-  TLegend *l = new TLegend(0.30,      thisworkheight,
-                           0.30+0.15, thisworkheight +0.12
-   #ifdef DRAWHEAVY
-    + 0.06
-   #endif
+  const double thisworky = 0.76;
+  const double thisworkx = 0.335;
+  TLegend *l = new TLegend(thisworkx,      thisworky,
+                           thisworkx+0.15, thisworky +0.18
   );
   l->SetTextSize(textsize);
   l->SetBorderSize(0);
   l->SetFillStyle(0);
   l->SetTextFont(42);
-  l->AddEntry((TH1D*)NULL, "This work", "");
+  l->SetTextAlign(22);
+  l->AddEntry((TH1D*)NULL, "NOvA", "");
+  l->AddEntry((TH1D*)NULL, "(This work)", "");
   l->AddEntry
-    (g.at("half"), " > 5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.05]{ }GeV",
-#ifdef DRAWHEAVY
-  "l");
-  l->AddEntry
-    (g.at("full"), " > 2#kern[-0.5]{ }#times#kern[-0.9]{ }10^{15} GeV", "l");
-#else
+    (g.at("half"), "> 5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
   "");
-#endif
-  l->Draw();
 
   TGraph slimlight;
   slimlight.SetPoint(slimlight.GetN(), 1.00, 1e-11);
@@ -281,45 +275,16 @@ void draw_limits(const lim_t & lims)
   slimlight.SetPoint(slimlight.GetN(), 0.05, 1.3e-15);
   slimlight.SetPoint(slimlight.GetN(), 1.00, 1.3e-15);
 
-  slimlight.SetLineWidth(3);
+  slimlight.SetLineWidth(2);
 
-  slimlight.SetFillStyle(3354);
-  slimlight.SetFillColor(kGreen+2);
-  slimlight.Draw("lf");
+  slimlight.SetFillStyle(1001);
+  slimlight.SetFillColor(kGreen);
  
-  TGraph slimheavy;
+  TGraph slimheavy; // irrelevant
   slimheavy.SetPoint(slimheavy.GetN(), 0.05, 0.65e-15);
   slimheavy.SetPoint(slimheavy.GetN(), 0.00, 0.65e-15);
 
   slimheavy.SetLineWidth(2);
-
-#ifdef DRAWHEAVY
-  slimheavy.Draw("l");
-#endif
-
-  {
-    const double slimy = 0.49,
-                 slimx = 0.60;
-    TLegend *l = new TLegend(slimx,      slimy,
-                             slimx+0.15, slimy+0.12
-                             #ifdef DRAWHEAVY
-                               + 0.06
-                             #endif
-    );
-    l->SetTextSize(textsize);
-    l->SetBorderSize(0);
-    l->SetFillStyle(0);
-    l->SetTextFont(42);
-    l->AddEntry((TH1D*)NULL, "SLIM", "");
-    l->AddEntry(&slimlight, " > 10^{5} GeV",
-#ifdef DRAWHEAVY
-    "l");
-    l->AddEntry(&slimheavy, " > 5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{13} GeV", "l");
-#else
-    "");
-#endif
-    l->Draw();
-  }
 
   // Extracted from the plot in the MACRO paper
   TGraph macroheavy;
@@ -364,6 +329,8 @@ void draw_limits(const lim_t & lims)
   macroheavy.SetPoint(macroheavy.GetN(), (0.22115), 1.4488283956730566e-16);
   macroheavy.SetPoint(macroheavy.GetN(), (0.659272), 1.44647434219323e-16);
   macroheavy.SetPoint(macroheavy.GetN(), (1), 1.44647434219323e-16);
+  macroheavy.SetPoint(macroheavy.GetN(), (1), 1e-12);
+  macroheavy.SetPoint(macroheavy.GetN(), (xmin), 1e-12);
 
   TGraph macrolight;
   for(int i = 0; i < macroheavy.GetN(); i++)
@@ -376,40 +343,15 @@ void draw_limits(const lim_t & lims)
     macroheavy.GetX()[0], 1e-11);
 
   macroheavy.SetLineWidth(2);
+  macroheavy.SetFillStyle(1001);
+  macroheavy.SetLineColor(kBlack);
+  macroheavy.SetFillColor(kCyan-10);
+
 
   macrolight.SetLineWidth(2);
-
-#ifdef DRAWHEAVY
-  macroheavy.Draw("l");
-#endif
-
   macrolight.SetFillStyle(1001);
-  macrolight.SetFillColorAlpha(kBlue, 0.3);
-  macrolight.Draw("lf");
-
-  {
-    const double macrox = 0.30,
-                 macroy = 0.34;
-    TLegend *l = new TLegend(macrox,      macroy,
-                             macrox+0.15, macroy+0.12
-                             #ifdef DRAWHEAVY
-                               + 0.06
-                             #endif
-                             );
-    l->SetTextSize(textsize);
-    l->SetBorderSize(0);
-    l->SetFillStyle(0);
-    l->SetTextFont(42);
-    l->AddEntry((TH1D*)NULL, "MACRO", "");
-    l->AddEntry(&macrolight, " > 10^{10} GeV",
-    #ifdef DRAWHEAVY
-    "l");
-    l->AddEntry(&macroheavy, " > 10^{16} GeV", "l");
-    #else
-    "");
-    #endif
-    l->Draw();
-  }
+  macrolight.SetLineColor(kBlack);
+  macrolight.SetFillColor(kCyan);
 
   TGraph icecube;
   icecube.SetPoint(icecube.GetN(), (0.995), 1e-11); // just for drawing
@@ -418,16 +360,26 @@ void draw_limits(const lim_t & lims)
   icecube.SetPoint(icecube.GetN(), (0.9), 3.56e-18);
   icecube.SetPoint(icecube.GetN(), (0.995), 3.38e-18);
 
-  icecube.SetFillStyle(3345);
+  icecube.SetFillStyle(1001);
   icecube.SetFillColor(kRed);
-  icecube.Draw("lf");
+  icecube.SetLineColor(kBlack);
+  icecube.SetLineWidth(2);
 
-  icecube.SetLineWidth(3);
-  icecube.SetLineStyle(kSolid);
+
+#ifdef DRAWHEAVY
+  macroheavy.Draw("lf"); // 1e16
+#endif
+  macrolight   .Draw("lf"); // 1e10
+  g.at("half")->Draw("lf"); // 5e8
+  icecube      .Draw("lf"); // 1e6
+  slimlight    .Draw("lf"); // 1e5
+
+
+  l->Draw();
 
   {
-    const double icex = 0.78,
-                 icey = 0.14;
+    const double icex = 0.725,
+                 icey = 0.173;
     TLegend *l = new TLegend(icex,      icey,
                              icex+0.15, icey+0.12);
     l->SetTextSize(textsize);
@@ -435,27 +387,75 @@ void draw_limits(const lim_t & lims)
     l->SetFillStyle(0);
     l->SetTextFont(42);
     l->AddEntry((TH1D*)NULL, "IceCube", "");
-    l->AddEntry((TH1D*)NULL, "> 10^{6} GeV", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{6}#kern[-0.3]{ }GeV", "");
+    l->Draw();
+
+    TArrow * a = new TArrow(0.36, 1.0e-17,
+                            0.75, 1.0e-17, 0.011, "|>");
+    a->SetLineWidth(2);
+    a->Draw();
+  }
+  {
+    const double macrox = 0.36,
+                 macroy = 0.54;
+    TLegend *l = new TLegend(macrox,      macroy,
+                             macrox+0.15, macroy+0.12);
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(42);
+    l->SetTextAlign(22);
+    l->AddEntry((TH1D*)NULL, "MACRO", "");
+    l->AddEntry(&macrolight, "> 10^{10}#kern[-0.3]{ }GeV", "");
     l->Draw();
   }
 
-  slimlight     .SetLineStyle(kSolid  ); // 1e5
-  g.at("half")-> SetLineStyle(kSolid  ); // 5e8
-#ifdef DRAWHEAVY
-  macrolight    .SetLineStyle(7       ); // 1e10
+  #ifdef DRAWHEAVY
+  {
+    const double macrox = 0.36,
+                 macroy = 0.25;
+    TLegend *l = new TLegend(macrox,      macroy,
+                             macrox+0.15, macroy+0.12
+                             );
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(42);
+    l->SetTextAlign(22);
+    l->AddEntry((TH1D*)NULL, "MACRO", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{16}#kern[-0.3]{ }GeV", "");
+    l->Draw();
+
+    TArrow * a = new TArrow(1.85e-3, 6.0e-17,
+                            1.85e-3, 2.0e-16, 0.011, "|>");
+    a->SetLineWidth(2);
+    a->Draw();
+  }
+  #endif
+
+  {
+    const double slimy = 0.69,
+                 slimx = 0.76;
+    TLegend *l = new TLegend(slimx,      slimy,
+                             slimx+0.15, slimy+0.12);
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetTextAlign(22);
+    l->SetFillStyle(0);
+    l->SetTextFont(42);
+    l->AddEntry((TH1D*)NULL, "SLIM", "");
+    l->AddEntry(&slimlight, "> 10^{5}#kern[-0.3]{ }GeV",
+#if 0
+    "l");
+    l->AddEntry(&slimheavy,
+      "> 5 #times 10^{13} GeV", "l");
+#else
+    "");
 #endif
-  slimheavy     .SetLineStyle(kDashed ); // 5e13
-  g.at("full")-> SetLineStyle(kDotted ); // 2e15
-  macroheavy    .SetLineStyle(kDotted ); // 1e16 or 1e17
+    l->Draw();
+  }
 
-  g.at("half")-> SetLineStyle(kSolid  ); // 5e8
-  g.at("full")-> SetLineStyle(kDotted ); // 2e15
-  slimlight     .SetLineColor(kGreen+2);
-  slimheavy     .SetLineColor(kGreen+2);
-  macrolight    .SetLineColor(kBlue);
-  macroheavy    .SetLineColor(kBlue);
-  icecube.SetLineColor(kRed);
-
+  can->RedrawAxis();
   can->SaveAs("limit_plot.pdf");
 }
 
