@@ -1,4 +1,8 @@
-all: coverage.pdf limit_plot.pdf scatterr2.pdf scatterfmax.pdf r2min-n-1.pdf fmax-n-1.pdf
+all: coverage.pdf limit_plot.pdf scatterr2.pdf scatterfmax.pdf r2min-n-1.pdf \
+     fmax-n-1.pdf fig-thetax.pdf
+
+fig-thetax.pdf: fig-thetax.C
+        root -l -b -n -q fig-thetax.C
 
 coverage.pdf: coverage.cc
 	root -b -l -n -q coverage.cc
