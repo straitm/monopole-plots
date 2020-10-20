@@ -16,6 +16,7 @@
 #include <TMath.h>
 #include <TStyle.h>
 #include <TTree.h>
+#include <TPaletteAxis.h>
 
 #include <limits.h>
 
@@ -206,19 +207,27 @@ void draw_beta_fmax(graphs_t const& g, const std::string & name)
   const double rat = 400/267.2;
   
   c1->SetCanvasSize(600, 400/rat);
-  c1->SetRightMargin(0.025);
+  c1->SetRightMargin(0.09);
   c1->SetTopMargin(0.03 * rat);
   c1->SetLeftMargin(0.14);
-  c1->SetBottomMargin(0.14 * rat);
+  c1->SetBottomMargin(0.13 * rat);
 
   c1->SetLogy();
   c1->SetLogz();
   c1->SetTickx();
   c1->SetTicky();
 
-  const double ymin = 1e-4;
+  gStyle->SetPalette(kBird);
+  TColor::InvertPalette();
   
-  TH2D dum("dum", "", 1, 0, 1, 1, ymin, 1e-1);
+  const double ylow = 1e-4, yhigh = 1e-1;
+  
+  const unsigned int nxbins = 40, nybins = 5;
+  double ybins[nybins+1] = { 0 };
+  for(unsigned int i = 0; i <= nybins; i++)
+    ybins[i] = exp(log(ylow) + double(i)/nybins * (log(yhigh) - log(ylow)));
+  
+  TH2D heatmc("heatmc", "", nxbins, 0, 1, nybins, ybins);
 
   TGraph* data = dynamic_cast<TGraph *>(g.at("Data").at(name));
   if(data == NULL){
@@ -230,8 +239,9 @@ void draw_beta_fmax(graphs_t const& g, const std::string & name)
 
   TGraph* mc = g.at("MC").at(name);
 
-  TAxis* x = dum.GetXaxis();
-  TAxis* y = dum.GetYaxis();
+  TAxis* x = heatmc.GetXaxis();
+  TAxis* y = heatmc.GetYaxis();
+  TAxis* z = heatmc.GetZaxis();
 
   x->SetTitle("Largest gap, f_{max}");
   y->SetTitle("Reconstructed speed (#beta)  ");
@@ -240,11 +250,19 @@ void draw_beta_fmax(graphs_t const& g, const std::string & name)
   x->SetLabelSize(textsize*rat);
   y->SetTitleSize(textsize*rat);
   y->SetLabelSize(textsize*rat);
+  z->SetTitleSize(textsize*rat);
+  z->SetLabelSize(textsize*rat);
   x->CenterTitle();
   y->CenterTitle();
+  z->CenterTitle();
+
+  z->SetRangeUser(99.99, 10000);
 
   y->SetTitleOffset(1.08/rat);
   x->SetTitleOffset(1.04);
+  z->SetLabelOffset(-0.006 * rat);
+
+  heatmc.SetContour(8);
 
   data->SetMarkerStyle(kFullCircle);
   data->SetMarkerColor(datacolor);
@@ -253,11 +271,25 @@ void draw_beta_fmax(graphs_t const& g, const std::string & name)
   mc->SetMarkerColor(mccolor);
   mc->SetMarkerSize(0.9);
 
-  dum.Draw();
+  for(int i = 0; i < mc->GetN(); i++)
+    heatmc.Fill(mc->GetX()[i], mc->GetY()[i]);
+
+  heatmc.Draw("colz");
   data->Draw("P");
   mc->Draw("p");
 
-  TLine *line = new TLine(0.2, ymin, 0.2, 1e-2);
+  // As per documentation, must do this before getting TPaletteAxis object.
+  gPad->Update();
+
+  TPaletteAxis *pal =
+    (TPaletteAxis*)heatmc.GetListOfFunctions()->FindObject("palette");
+
+  if(pal != NULL)
+    pal->SetX2(pal->GetX1()+0.035);
+  else
+    fprintf(stderr, "I have no pal\n");
+
+  TLine *line = new TLine(0.2, ylow, 0.2, 1e-2);
   line->SetLineColor(kGreen + 2);
   line->SetLineWidth(3);
   line->SetLineStyle(2);
@@ -277,7 +309,7 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
   TCanvas * c1 = new TCanvas;
   
   c1->SetCanvasSize(600, 400);
-  c1->SetRightMargin(0.115);
+  c1->SetRightMargin(0.09);
   c1->SetTopMargin(0.03);
   c1->SetLeftMargin(0.14);
   c1->SetBottomMargin(0.14);
@@ -323,6 +355,7 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
   z->CenterTitle();
   x->SetTickSize(0.025);
   y->SetTickSize(0.025);
+  z->SetTickSize(0.025);
   x->SetTitleSize(textsize);
   x->SetLabelSize(textsize);
   y->SetTitleSize(textsize);
@@ -336,7 +369,7 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
 
   y->SetTitleOffset(1.08);
   x->SetTitleOffset(1.04);
-  z->SetLabelOffset(0.000);
+  z->SetLabelOffset(-0.004);
   
   data->SetMarkerStyle(kFullCircle);
   data->SetMarkerColor(datacolor);
@@ -352,11 +385,20 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
   for(int i = 0; i < mc->GetN(); i++)
     heatmc.Fill(mc->GetX()[i], mc->GetY()[i]);
 
-  heatmc.SavePrimitive(std::cout);
-
   heatmc.Draw("colz");
   data->Draw("P");
   mc->Draw("p");
+
+  // As per documentation, must do this before getting TPaletteAxis object.
+  gPad->Update();
+
+  TPaletteAxis *pal =
+    (TPaletteAxis*)heatmc.GetListOfFunctions()->FindObject("palette");
+
+  if(pal != NULL)
+    pal->SetX2(pal->GetX1()+0.035);
+  else
+    fprintf(stderr, "I have no pal\n");
 
   TLine *line = new TLine(0.95, 1e-5, 0.95, 1e-2);
   line->SetLineColor(kGreen + 2);
