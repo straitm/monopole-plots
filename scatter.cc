@@ -277,7 +277,7 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
   TCanvas * c1 = new TCanvas;
   
   c1->SetCanvasSize(600, 400);
-  c1->SetRightMargin(0.025);
+  c1->SetRightMargin(0.115);
   c1->SetTopMargin(0.03);
   c1->SetLeftMargin(0.14);
   c1->SetBottomMargin(0.14);
@@ -287,7 +287,15 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
   c1->SetTickx();
   c1->SetTicky();
   
-  TH2D dum("dum", "", 1, 0, 1, 1, 1e-5, 1);
+  const double ylow = 1e-5;
+  const double yhigh = 1;
+
+  const unsigned int nxbins = 40, nybins = 14;
+  double ybins[nybins+1] = { 0 };
+  for(unsigned int i = 0; i <= nybins; i++)
+    ybins[i] = exp(log(ylow) + double(i)/nybins * (log(yhigh) - log(ylow)));
+  
+  TH2D heatmc("heatmc", "", nxbins, 0, 1, nybins, ybins);
 
   TGraph* data = dynamic_cast<TGraph *>(g.at("Data").at(name));
   if(data == NULL){
@@ -297,23 +305,35 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
 
   TGraph* mc = g.at("MC").at(name);
 
-  TAxis* x = dum.GetXaxis();
-  TAxis* y = dum.GetYaxis();
+  TAxis* x = heatmc.GetXaxis();
+  TAxis* y = heatmc.GetYaxis();
+  TAxis* z = heatmc.GetZaxis();
 
   x->SetTitle("Correlation coefficient, r_{min}^{2}");
   y->SetTitle("Reconstructed speed (#beta)");
+#if 0
+  z->SetTitle("MC density");
+#endif
 
   x->CenterTitle();
   y->CenterTitle();
+  z->CenterTitle();
   x->SetTickSize(0.025);
   y->SetTickSize(0.025);
   x->SetTitleSize(textsize);
   x->SetLabelSize(textsize);
   y->SetTitleSize(textsize);
   y->SetLabelSize(textsize);
+  z->SetTitleSize(textsize);
+  z->SetLabelSize(textsize);
+
+  z->SetRangeUser(9.999, 1000);
+
+  heatmc.SetContour(8);
 
   y->SetTitleOffset(1.08);
   x->SetTitleOffset(1.04);
+  z->SetLabelOffset(0.000);
   
   data->SetMarkerStyle(kFullCircle);
   data->SetMarkerColor(datacolor);
@@ -326,7 +346,12 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
 
   save_data_graph(data, "nose");
 
-  dum.Draw();
+  for(int i = 0; i < mc->GetN(); i++)
+    heatmc.Fill(mc->GetX()[i], mc->GetY()[i]);
+
+  heatmc.SavePrimitive(std::cout);
+
+  heatmc.Draw("colz");
   data->Draw("P");
   mc->Draw("p");
 
