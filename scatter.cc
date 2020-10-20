@@ -286,6 +286,9 @@ void draw_beta_r2(graphs_t const& g, const std::string & name)
   c1->SetLogz();
   c1->SetTickx();
   c1->SetTicky();
+
+  gStyle->SetPalette(kBird);
+  TColor::InvertPalette();
   
   const double ylow = 1e-5;
   const double yhigh = 1;
