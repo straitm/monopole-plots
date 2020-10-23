@@ -469,16 +469,12 @@ void draw_r2(hists_t const& h, std::string hist_name)
   
   y->SetTitle("Number of events");
   y->CenterTitle();
-  y->SetRangeUser(5e-1, 1e5);
+  y->SetRangeUser(5e-1, 3e4);
 
   x->SetTitleOffset(1.06);
   y->SetTitleOffset(1.1);
   x->SetLabelOffset(0.011);
   y->SetLabelOffset(0.015);
-  
-  mc->SetLineColor(kRed);
-  mc->SetMarkerColor(kRed);
-  mc->SetLineStyle(7);
   
   TCanvas * c1 = new TCanvas;
 
@@ -491,9 +487,6 @@ void draw_r2(hists_t const& h, std::string hist_name)
   y->SetTickSize(0.015);
   x->SetDecimals();
 
-  data->Draw("hist");
-  mc->Draw("SAME hist");
-
   c1->SetLogy();
   c1->SetLogz();
   c1->SetTickx();
@@ -504,38 +497,93 @@ void draw_r2(hists_t const& h, std::string hist_name)
   x->SetLabelSize(textsize);
   y->SetLabelSize(textsize);
 
-  TLegend *leg = new TLegend(0.25, 0.75, 0.55, 0.93);
+  TH1D * mc5e3 = new TH1D("mc5e3", "", 40, 0, 1);
+
+  mc5e3->SetLineColor(kBlue);
+  mc5e3->SetLineColor(kBlue);
+
+  mc5e3->SetBinContent(1,38);
+  mc5e3->SetBinContent(2,8);
+  mc5e3->SetBinContent(3,4);
+  mc5e3->SetBinContent(4,4);
+  mc5e3->SetBinContent(5,3);
+  mc5e3->SetBinContent(6,7);
+  mc5e3->SetBinContent(7,2);
+  mc5e3->SetBinContent(9,2);
+  mc5e3->SetBinContent(10,1);
+  mc5e3->SetBinContent(12,1);
+  mc5e3->SetBinContent(13,3);
+  mc5e3->SetBinContent(15,2);
+  mc5e3->SetBinContent(16,2);
+  mc5e3->SetBinContent(17,1);
+  mc5e3->SetBinContent(18,1);
+  mc5e3->SetBinContent(19,1);
+  mc5e3->SetBinContent(20,1);
+  mc5e3->SetBinContent(21,3);
+  mc5e3->SetBinContent(22,2);
+  mc5e3->SetBinContent(23,1);
+  mc5e3->SetBinContent(24,3);
+  mc5e3->SetBinContent(25,2);
+  mc5e3->SetBinContent(26,6);
+  mc5e3->SetBinContent(27,4);
+  mc5e3->SetBinContent(28,4);
+  mc5e3->SetBinContent(29,6);
+  mc5e3->SetBinContent(30,4);
+  mc5e3->SetBinContent(31,5);
+  mc5e3->SetBinContent(32,3);
+  mc5e3->SetBinContent(33,5);
+  mc5e3->SetBinContent(34,10);
+  mc5e3->SetBinContent(35,5);
+  mc5e3->SetBinContent(36,18);
+  mc5e3->SetBinContent(37,18);
+  mc5e3->SetBinContent(38,37);
+  mc5e3->SetBinContent(39,61);
+  mc5e3->SetBinContent(40,5176);
+
+
+  mc5e3->Scale(data->Integral()/mc5e3->Integral());
+
+  mc->SetLineColor(kRed);
+  mc->SetMarkerColor(kRed);
+  mc->SetLineStyle(9);
+
+  mc5e3->SetLineColor(kBlue);
+  mc5e3->SetMarkerColor(kBlue);
+  mc5e3->SetLineStyle(7);
+
+  data ->SetLineWidth(2);
+  mc   ->SetLineWidth(2);
+  mc5e3->SetLineWidth(2);
+
+  
+  data->Draw("hist");
+  mc   ->Draw("SAME hist");
+  mc5e3->Draw("SAME hist");
+
+  TLegend *leg = new TLegend(0.25, 0.93 - 3*(1.1*textsize), 0.53, 0.93);
   leg->SetTextSize(textsize);
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
   leg->SetTextFont(42);
 
   leg->AddEntry(data, "Data", "l");
-  std::string mc_legend_title =
-    "MC, #beta = " + MC_BETA_NICE_NAME + ", normalized to data";
-  leg->AddEntry(mc, mc_legend_title.c_str(), "l");
+  leg->AddEntry(mc,    "MC, #beta = 1#kern[-0.1]{ }#times10^{#minus3}, normalized to data", "l");
+  leg->AddEntry(mc5e3, "MC, #beta = 5#kern[-0.5]{ }#times10^{#minus3}", "l");
   leg->Draw();
 
   if (hist_name.find("min") != std::string::npos) {
-    TLine *line = new TLine(0.95, 0.5, 0.95, 1e5);
+    TLine *line = new TLine(0.95, 0.5, 0.95, 3e4);
     line->SetLineColor(kGreen + 2);
     line->SetLineWidth(2);
     line->SetLineStyle(2);
     line->Draw();
 
-    TArrow *arrow = new TArrow(0.95, 3.5e4, 0.985, 3.5e4, 0.013, "|>");
+    TArrow *arrow = new TArrow(0.95, 1.5e4, 0.985, 1.5e4, 0.013, "|>");
     arrow->SetLineWidth(2);
     arrow->SetLineColor(kGreen + 2);
     arrow->SetFillColor(kGreen + 2);
     arrow->Draw();
   }
-
-  TH1D * mc5e3 = (TH1D*)mc->Clone("mc5e3");
-
-  mc5e3->SetLineColor(kBlue);
-  mc5e3->SetLineColor(kBlue);
-
-  mc5e3->Draw("same hist");
 
   c1->SaveAs("r2min-n-1.pdf");
 }
@@ -709,10 +757,10 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
   mc3e4->Scale(data->Integral()/mc3e4->Integral());
   //mc3e4->Draw("hist same ][");
 
-  mc->SetLineWidth(3);
-  mc5e3->SetLineWidth(3);
-  mc3e4->SetLineWidth(3);
-  data->SetLineWidth(3);
+  mc->SetLineWidth(2);
+  mc5e3->SetLineWidth(2);
+  mc3e4->SetLineWidth(2);
+  data->SetLineWidth(2);
 
   TLegend *leg = new TLegend(0.33, 0.93-3*(1.1*textsize), 0.61, 0.93);
   leg->SetTextSize(textsize);
