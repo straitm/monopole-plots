@@ -530,6 +530,13 @@ void draw_r2(hists_t const& h, std::string hist_name)
     arrow->Draw();
   }
 
+  TH1D * mc5e3 = (TH1D*)mc->Clone("mc5e3");
+
+  mc5e3->SetLineColor(kBlue);
+  mc5e3->SetLineColor(kBlue);
+
+  mc5e3->Draw("same hist");
+
   c1->SaveAs("r2min-n-1.pdf");
 }
 
@@ -592,10 +599,6 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
   auto y_max = 1.5;
   y->SetRangeUser(0, y_max);
 
-  mc->SetLineColor(kRed);
-  mc->SetMarkerColor(kRed);
-  mc->SetLineStyle(7);
-  
   TCanvas * c1 = new TCanvas;
 
   c1->SetCanvasSize(600, 400);
@@ -621,16 +624,106 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
   data->Draw("hist");
   mc->Draw("SAME hist ][");
 
-  TLegend *leg = new TLegend(0.35, 0.75, 0.65, 0.93);
+  TH1D * mc5e3 = new TH1D("mc5e3", "", 100, 0, 1);
+  TH1D * mc3e4 = new TH1D("mc3e4", "", 100, 0, 1);
+
+  mc->SetLineColor(kRed);
+  mc->SetMarkerColor(kRed);
+  mc->SetLineStyle(9);
+  
+  mc5e3->SetMarkerColor(kBlue);
+  mc5e3->SetLineColor(kBlue);
+  mc5e3->SetLineStyle(7);
+
+  mc3e4->SetMarkerColor(kBlack);
+  mc3e4->SetLineColor(kBlack);
+  mc3e4->SetLineStyle(kDashed);
+  
+  mc5e3->SetBinContent(2,41);
+  mc5e3->SetBinContent(3,218);
+  mc5e3->SetBinContent(4,358);
+  mc5e3->SetBinContent(5,405);
+  mc5e3->SetBinContent(6,493);
+  mc5e3->SetBinContent(7,543);
+  mc5e3->SetBinContent(8,612);
+  mc5e3->SetBinContent(9,486);
+  mc5e3->SetBinContent(10,440);
+  mc5e3->SetBinContent(11,313);
+  mc5e3->SetBinContent(12,289);
+  mc5e3->SetBinContent(13,252);
+  mc5e3->SetBinContent(14,208);
+  mc5e3->SetBinContent(15,137);
+  mc5e3->SetBinContent(16,137);
+  mc5e3->SetBinContent(17,92);
+  mc5e3->SetBinContent(18,91);
+  mc5e3->SetBinContent(19,66);
+  mc5e3->SetBinContent(20,56);
+  mc5e3->SetBinContent(21,34);
+  mc5e3->SetBinContent(22,34);
+  mc5e3->SetBinContent(23,31);
+  mc5e3->SetBinContent(24,20);
+  mc5e3->SetBinContent(25,13);
+  mc5e3->SetBinContent(26,14);
+  mc5e3->SetBinContent(27,17);
+  mc5e3->SetBinContent(28,9);
+  mc5e3->SetBinContent(29,10);
+  mc5e3->SetBinContent(30,9);
+  mc5e3->SetBinContent(31,8);
+  mc5e3->SetBinContent(32,8);
+  mc5e3->SetBinContent(33,4);
+  mc5e3->SetBinContent(34,5);
+  mc5e3->SetBinContent(36,2);
+  mc5e3->SetBinContent(37,2);
+  mc5e3->SetBinContent(38,3);
+  mc5e3->SetBinContent(39,3);
+  mc5e3->SetBinContent(41,1);
+  mc5e3->SetBinContent(45,1);
+  mc5e3->SetBinContent(46,1);
+
+  mc3e4->SetBinContent(2,64);
+  mc3e4->SetBinContent(3,427);
+  mc3e4->SetBinContent(4,844);
+  mc3e4->SetBinContent(5,1017);
+  mc3e4->SetBinContent(6,869);
+  mc3e4->SetBinContent(7,545);
+  mc3e4->SetBinContent(8,348);
+  mc3e4->SetBinContent(9,214);
+  mc3e4->SetBinContent(10,109);
+  mc3e4->SetBinContent(11,81);
+  mc3e4->SetBinContent(12,30);
+  mc3e4->SetBinContent(13,20);
+  mc3e4->SetBinContent(14,7);
+  mc3e4->SetBinContent(15,2);
+  mc3e4->SetBinContent(16,5);
+  mc3e4->SetBinContent(17,3);
+  mc3e4->SetBinContent(18,4);
+  mc3e4->SetBinContent(19,1);
+  mc3e4->SetBinContent(21,1);
+
+
+  mc5e3->Rebin(2);
+  mc5e3->Scale(data->Integral()/mc5e3->Integral());
+  mc5e3->Draw("hist same ][");
+
+  mc3e4->Rebin(2);
+  mc3e4->Scale(data->Integral()/mc3e4->Integral());
+  //mc3e4->Draw("hist same ][");
+
+  mc->SetLineWidth(3);
+  mc5e3->SetLineWidth(3);
+  mc3e4->SetLineWidth(3);
+  data->SetLineWidth(3);
+
+  TLegend *leg = new TLegend(0.33, 0.93-3*(1.1*textsize), 0.61, 0.93);
   leg->SetTextSize(textsize);
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
   leg->SetTextFont(42);
   leg->SetTextSizePixels(20);
   leg->AddEntry(data, "Data", "l");
-  std::string mc_legend_title =
-    "MC, #beta = " + MC_BETA_NICE_NAME + ", normalized to data";
-  leg->AddEntry(mc, mc_legend_title.c_str(), "l");
+  leg->AddEntry(mc,    "MC, #beta = 1#kern[-0.1]{ }#times10^{#minus3}, normalized to data", "l");
+  leg->AddEntry(mc5e3, "MC, #beta = 5#kern[-0.5]{ }#times10^{#minus3}", "l");
+  //leg->AddEntry(mc3e4, "MC, #beta = 3#kern[-0.5]{ }#times10^{#minus4}", "l");
   leg->Draw();
 
   if (hist_name.find("max") != std::string::npos) {
