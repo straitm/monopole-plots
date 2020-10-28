@@ -152,11 +152,11 @@ void draw(TH2F* h)
   line.SetLineStyle(kDashed);
   line.SetLineWidth(3);
   line.DrawLine(4.4, pow(10, -2.1), 18, pow(10, -2.1));
-  line.DrawLine(4.4, pow(10, -3.5), 18, pow(10, -3.5));
-  line.DrawLine(log10(5e8) , pow(10, -3.5), log10(5e8), pow(10, -2.1));
-  line.DrawLine(log10(2e15), pow(10, -3.5), log10(2e15), pow(10, -2.1));
+  line.DrawLine(4.4, pow(10, -3.6), 18, pow(10, -3.6));
+  line.DrawLine(log10(5e8) , pow(10, -3.6), log10(5e8), pow(10, -2.1));
+  line.DrawLine(log10(2e15), pow(10, -3.6), log10(2e15), pow(10, -2.1));
 
-  const double arrowy = pow(10, (-2.1 -3.5)/2), arrowdx = 1.0;
+  const double arrowy = pow(10, (-2.1 -3.6)/2), arrowdx = 1.0;
   TArrow * ahalf = new TArrow(log10(5e8), arrowy, log10(5e8)+arrowdx, arrowy, 0.018, "|>");
   ahalf->SetLineWidth(3);
   ahalf->Draw();
@@ -170,7 +170,7 @@ void draw(TH2F* h)
   line_labels.SetTextFont(42);
   line_labels.SetTextAlign(22);
   line_labels.DrawLatex(18.8, pow(10, -2.1 + 0.02), "10^{#minus2.1}");
-  line_labels.DrawLatex(18.8, pow(10, -3.5 + 0.02), "10^{#minus3.5}");
+  line_labels.DrawLatex(18.8, pow(10, -3.6 + 0.02), "10^{#minus3.6}");
 }
 
 
