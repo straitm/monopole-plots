@@ -790,6 +790,152 @@ void draw_time_gap(hists_t const& h, std::string hist_name)
   }
 
   c1->SaveAs("fmax-n-1.pdf");
+
+
+  // This is to provide to the PRD referee, who asked for the 1D
+  // fmax plot without the r2 cut.
+
+  delete mc5e3;
+
+  data->SetBinContent(1,2210);
+  data->SetBinContent(2,210);
+  data->SetBinContent(3,191);
+  data->SetBinContent(4,383);
+  data->SetBinContent(5,770);
+  data->SetBinContent(6,1321);
+  data->SetBinContent(7,2077);
+  data->SetBinContent(8,2761);
+  data->SetBinContent(9,3442);
+  data->SetBinContent(10,4064);
+  data->SetBinContent(11,4537);
+  data->SetBinContent(12,5315);
+  data->SetBinContent(13,5776);
+  data->SetBinContent(14,6191);
+  data->SetBinContent(15,6491);
+  data->SetBinContent(16,6552);
+  data->SetBinContent(17,6897);
+  data->SetBinContent(18,6782);
+  data->SetBinContent(19,6897);
+  data->SetBinContent(20,6601);
+  data->SetBinContent(21,6574);
+  data->SetBinContent(22,6542);
+  data->SetBinContent(23,6291);
+  data->SetBinContent(24,6221);
+  data->SetBinContent(25,6170);
+  data->SetBinContent(26,6170);
+  data->SetBinContent(27,5586);
+  data->SetBinContent(28,5284);
+  data->SetBinContent(29,5059);
+  data->SetBinContent(30,4583);
+  data->SetBinContent(31,4449);
+  data->SetBinContent(32,4167);
+  data->SetBinContent(33,4017);
+  data->SetBinContent(34,3670);
+  data->SetBinContent(35,3395);
+  data->SetBinContent(36,3396);
+  data->SetBinContent(37,3165);
+  data->SetBinContent(38,2975);
+  data->SetBinContent(39,2872);
+  data->SetBinContent(40,2781);
+  data->SetBinContent(41,2638);
+  data->SetBinContent(42,2643);
+  data->SetBinContent(43,2744);
+  data->SetBinContent(44,2832);
+  data->SetBinContent(45,3015);
+  data->SetBinContent(46,3494);
+  data->SetBinContent(47,4610);
+  data->SetBinContent(48,5459);
+  data->SetBinContent(49,6425);
+  data->SetBinContent(50,6361);
+
+  mc->SetBinContent(1,38566.89);
+  mc->SetBinContent(2,105115);
+  mc->SetBinContent(3,38173.11);
+  mc->SetBinContent(4,12925.12);
+  mc->SetBinContent(5,5929.804);
+  mc->SetBinContent(6,2617.452);
+  mc->SetBinContent(7,1227.655);
+  mc->SetBinContent(8,903.3686);
+  mc->SetBinContent(9,694.8989);
+  mc->SetBinContent(10,463.2659);
+  mc->SetBinContent(11,393.776);
+  mc->SetBinContent(12,324.2861);
+  mc->SetBinContent(13,138.9798);
+  mc->SetBinContent(14,69.48989);
+  mc->SetBinContent(15,115.8165);
+  mc->SetBinContent(16,162.1431);
+  mc->SetBinContent(17,69.48989);
+  mc->SetBinContent(18,648.5723);
+  mc->SetBinContent(19,162.1431);
+  mc->SetBinContent(20,138.9798);
+  mc->SetBinContent(21,162.1431);
+  mc->SetBinContent(22,324.2861);
+  mc->SetBinContent(23,231.633);
+  mc->SetBinContent(24,671.7356);
+  mc->SetBinContent(26,92.65319);
+  mc->SetBinContent(27,162.1431);
+  mc->SetBinContent(28,69.48989);
+  mc->SetBinContent(29,393.776);
+  mc->SetBinContent(30,92.65319);
+  mc->SetBinContent(31,46.32659);
+  mc->SetBinContent(33,208.4697);
+  mc->SetBinContent(34,138.9798);
+  mc->SetBinContent(35,69.48989);
+  mc->SetBinContent(36,23.1633);
+  mc->SetBinContent(37,69.48989);
+  mc->SetBinContent(38,185.3064);
+  mc->SetBinContent(39,46.32659);
+  mc->SetBinContent(40,162.1431);
+  mc->SetBinContent(43,208.4697);
+  mc->SetBinContent(44,69.48989);
+  mc->SetBinContent(46,115.8165);
+  mc->SetBinContent(47,208.4697);
+  mc->SetBinContent(48,254.7963);
+  mc->SetBinContent(49,69.48989);
+  mc->SetBinContent(50,138.9798);
+
+  mc->Scale(data->Integral()/mc->Integral());
+
+  mc->Scale(1e-3);
+  data->Scale(1e-3);
+
+  data->Draw("hist ][");
+  mc->Draw("same hist ][");
+
+  y_max = mc->GetMaximum()*1.1;
+
+  {
+    TLine *line = new TLine(0.2, 0, 0.2, y_max);
+    line->SetLineColor(kGreen + 2);
+    line->SetLineWidth(2);
+    line->SetLineStyle(2);
+    line->Draw();
+
+    TArrow *arrow =
+      new TArrow(0.2, 0.8 * y_max, 0.15, 0.8 * y_max, 0.012, "|>");
+    arrow->SetLineWidth(2);
+    arrow->SetLineColor(kGreen + 2);
+    arrow->SetFillColor(kGreen + 2);
+    arrow->Draw();
+
+    TLegend *leg = new TLegend(0.33, 0.93-3*(1.1*textsize), 0.61, 0.93);
+    leg->SetTextSize(textsize);
+    leg->SetBorderSize(0);
+    leg->SetFillStyle(0);
+    leg->SetTextFont(42);
+    leg->SetTextSizePixels(20);
+    leg->AddEntry((TH1D*)NULL, "No r^{2}_{min} cut", "");
+    leg->AddEntry(data, "Data", "l");
+    leg->AddEntry(mc,    "MC, #beta = 1#kern[-0.1]{ }#times10^{#minus3}, normalized to data", "l");
+    //leg->AddEntry(mc3e4, "MC, #beta = 3#kern[-0.5]{ }#times10^{#minus4}", "l");
+    leg->Draw();
+
+  }
+
+  y->SetRangeUser(0, mc->GetMaximum()*1.1);
+  y->SetTitle("Number of events #times 10^{3}");
+
+  c1->SaveAs("fmax-n-2.pdf");
 }
 
 

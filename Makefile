@@ -1,5 +1,5 @@
 all: coverage.pdf limit_plot.pdf scatterr2.pdf scatterfmax.pdf r2min-n-1.pdf \
-     fmax-n-1.pdf fig-thetax.pdf
+     fmax-n-1.pdf fig-thetax.pdf fmax-n-2.pdf
 
 fig-thetax.pdf: fig-thetax.C
 	root -l -b -n -q fig-thetax.C
@@ -34,7 +34,7 @@ scatter: scatter.o Event_Info.o Event_List.o
 scatter.o: scatter.cc Event_Info.hh Event_List.hh MFRoot.hh
 	g++ -O3 -Wall -Wextra -Werror `root-config --cflags` -c scatter.cc
 
-r2min-n-1.pdf fmax-n-1.pdf: compare_data_and_mc.cc Event_List.cc \
+r2min-n-1.pdf fmax-n-1.pdf fmax-n-2.pdf: compare_data_and_mc.cc Event_List.cc \
  Event_Info.cc Constants.hh Event_Info.hh Event_List.hh
 	root -b -l -n -q compare_data_and_mc.cc+O
 
