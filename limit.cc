@@ -222,7 +222,7 @@ void draw_limits(const lim_t & lims)
 
   const double xmin = pow(10, -4.4);
 
-  TH2D dum("dum", "", 1, xmin, 1, 1, 1e-18, 1e-12);
+  TH2D dum("dum", "", 1, xmin, 1, 1, 1e-19, 1e-12);
   
   dum.Draw();
   
@@ -253,10 +253,10 @@ void draw_limits(const lim_t & lims)
   x->SetTickSize(0.025); // Smaller than default (0.03)
   y->SetTickSize(0.025); 
 
-  const double thisworky = 0.76;
+  const double thisworky = 0.80;
   const double thisworkx = 0.335;
   TLegend *l = new TLegend(thisworkx,      thisworky,
-                           thisworkx+0.15, thisworky +0.18
+                           thisworkx+0.15, thisworky +0.12
   );
   l->SetTextSize(textsize);
   l->SetBorderSize(0);
@@ -264,7 +264,6 @@ void draw_limits(const lim_t & lims)
   l->SetTextFont(42);
   l->SetTextAlign(22);
   l->AddEntry((TH1D*)NULL, "NOvA", "");
-  l->AddEntry((TH1D*)NULL, "(This work)", "");
   l->AddEntry
     (g.at("half"), "> 5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
   "");
@@ -354,11 +353,14 @@ void draw_limits(const lim_t & lims)
   macrolight.SetFillColor(kCyan);
 
   TGraph icecube;
-  icecube.SetPoint(icecube.GetN(), (0.995), 1e-11); // just for drawing
-  icecube.SetPoint(icecube.GetN(), (0.8), 1e-11); // just for drawing
-  icecube.SetPoint(icecube.GetN(), (0.8), 5.57e-18);
-  icecube.SetPoint(icecube.GetN(), (0.9), 3.56e-18);
-  icecube.SetPoint(icecube.GetN(), (0.995), 3.38e-18);
+  icecube.SetPoint(icecube.GetN(), 0.995, 1e-11); // just for drawing
+  icecube.SetPoint(icecube.GetN(), 0.8, 1e-11); // just for drawing
+  {
+    std::ifstream icecubein("icecube.txt");
+    double beta, lim;
+    while(icecubein >> beta >> lim)
+      icecube.SetPoint(icecube.GetN(), beta, lim);
+  }
 
   icecube.SetFillStyle(1001);
   icecube.SetFillColor(kRed);
@@ -366,10 +368,27 @@ void draw_limits(const lim_t & lims)
   icecube.SetLineWidth(2);
 
 
+  TGraph antares;
+  antares.SetPoint(antares.GetN(), 0.995, 1e-11); // just for drawing
+  antares.SetPoint(antares.GetN(), 0.5945, 1e-11); // just for drawing
+  {
+    std::ifstream antaresin("antares.txt");
+    double beta, lim;
+    while(antaresin >> beta >> lim)
+      antares.SetPoint(antares.GetN(), beta, lim);
+  }
+
+  antares.SetFillStyle(1001);
+  antares.SetFillColor(kOrange);
+  antares.SetLineColor(kBlack);
+  antares.SetLineWidth(2);
+
+
 #ifdef DRAWHEAVY
   macroheavy.Draw("lf"); // 1e16
 #endif
   macrolight   .Draw("lf"); // 1e10
+  antares      .Draw("lf"); // 1e10(?)
   g.at("half")->Draw("lf"); // 5e8
   icecube      .Draw("lf"); // 1e6
   slimlight    .Draw("lf"); // 1e5
@@ -387,17 +406,35 @@ void draw_limits(const lim_t & lims)
     l->SetFillStyle(0);
     l->SetTextFont(42);
     l->AddEntry((TH1D*)NULL, "IceCube", "");
-    l->AddEntry((TH1D*)NULL, "> 10^{6}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{8}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
-    TArrow * a = new TArrow(0.36, 1.0e-17,
-                            0.75, 1.0e-17, 0.011, "|>");
+    TArrow * a = new TArrow(0.36, 1.0e-18,
+                            0.75, 1.0e-18, 0.011, "|>");
+    a->SetLineWidth(2);
+    a->Draw();
+  }
+  {
+    const double antx = 0.67,
+                 anty = 0.36;
+    TLegend *l = new TLegend(antx,      anty,
+                             antx+0.15, anty+0.12);
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(42);
+    l->AddEntry((TH1D*)NULL, "ANTARES", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{10}#kern[-0.3]{ }GeV", "");
+    l->Draw();
+
+    TArrow * a = new TArrow(0.30, 3.0e-17,
+                            0.59, 3.0e-17, 0.011, "|>");
     a->SetLineWidth(2);
     a->Draw();
   }
   {
     const double macrox = 0.36,
-                 macroy = 0.54;
+                 macroy = 0.57;
     TLegend *l = new TLegend(macrox,      macroy,
                              macrox+0.15, macroy+0.12);
     l->SetTextSize(textsize);
@@ -413,7 +450,7 @@ void draw_limits(const lim_t & lims)
   #ifdef DRAWHEAVY
   {
     const double macrox = 0.36,
-                 macroy = 0.25;
+                 macroy = 0.31;
     TLegend *l = new TLegend(macrox,      macroy,
                              macrox+0.15, macroy+0.12
                              );
@@ -426,7 +463,7 @@ void draw_limits(const lim_t & lims)
     l->AddEntry((TH1D*)NULL, "> 10^{16}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
-    TArrow * a = new TArrow(1.85e-3, 6.0e-17,
+    TArrow * a = new TArrow(1.85e-3, 5.0e-17,
                             1.85e-3, 2.0e-16, 0.011, "|>");
     a->SetLineWidth(2);
     a->Draw();
@@ -434,7 +471,7 @@ void draw_limits(const lim_t & lims)
   #endif
 
   {
-    const double slimy = 0.69,
+    const double slimy = 0.73,
                  slimx = 0.76;
     TLegend *l = new TLegend(slimx,      slimy,
                              slimx+0.15, slimy+0.12);
