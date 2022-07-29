@@ -17,7 +17,7 @@ limit: limit.o Event_Info.o
 	g++ `root-config --libs` limit.o Event_Info.o -o limit
 
 limit.o: limit.cc Constants.hh
-	g++ -Wall -Wextra -Werror -O3 `root-config --cflags` -c limit.cc
+	g++ -Wall -Wextra -Werror `root-config --cflags` -c limit.cc
 
 
 limit_sensitivity_plot.pdf: limit_sensitivity icecube.txt antares.txt
@@ -27,7 +27,7 @@ limit_sensitivity: limit_sensitivity.o Event_Info.o
 	g++ `root-config --libs` limit_sensitivity.o Event_Info.o -o limit_sensitivity
 
 limit_sensitivity.o: limit_sensitivity.cc Constants.hh
-	g++ -Wall -Wextra -Werror -O3 `root-config --cflags` -c limit_sensitivity.cc
+	g++ -Wall -Wextra -Werror `root-config --cflags` -c limit_sensitivity.cc
 
 
 limit_sensitivity_slowfast_plot.pdf: limit_sensitivity_slowfast icecube.txt antares.txt
@@ -37,7 +37,7 @@ limit_sensitivity_slowfast: limit_sensitivity_slowfast.o Event_Info.o
 	g++ `root-config --libs` limit_sensitivity_slowfast.o Event_Info.o -o limit_sensitivity_slowfast
 
 limit_sensitivity_slowfast.o: limit_sensitivity_slowfast.cc Constants.hh
-	g++ -Wall -Wextra -Werror -O3 `root-config --cflags` -c limit_sensitivity_slowfast.cc
+	g++ -Wall -Wextra -Werror `root-config --cflags` -c limit_sensitivity_slowfast.cc
 
 
 limit_sensitivity_slowfast_heavy_plot.pdf: limit_sensitivity_slowfast_heavy icecube.txt antares.txt
@@ -47,7 +47,7 @@ limit_sensitivity_slowfast_heavy: limit_sensitivity_slowfast_heavy.o Event_Info.
 	g++ `root-config --libs` limit_sensitivity_slowfast_heavy.o Event_Info.o -o limit_sensitivity_slowfast_heavy
 
 limit_sensitivity_slowfast_heavy.o: limit_sensitivity_slowfast.cc Constants.hh
-	g++ -DDRAWNOVAHEAVY -Wall -Wextra -Werror -O3 `root-config --cflags` -c limit_sensitivity_slowfast.cc -o limit_sensitivity_slowfast_heavy.o
+	g++ -DDRAWNOVAHEAVY -Wall -Wextra -Werror `root-config --cflags` -c limit_sensitivity_slowfast.cc -o limit_sensitivity_slowfast_heavy.o
 
 
 Event_Info.o: Event_Info.cc Constants.hh

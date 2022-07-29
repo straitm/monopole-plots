@@ -221,14 +221,17 @@ void draw_limits(const lim_t & lims)
   can->SetLogx();
 
   const double xmin = pow(10, -4.4);
+  const double ymax = 1e-11;
 
-  TH2D dum("dum", "", 1, xmin, 1, 1, 1e-19, 1e-12);
+  TH2D dum("dum", "", 1, xmin, 1, 1, 1e-19, ymax);
   
   dum.Draw();
+
+  const double alpha = 0.88;
   
   g.at("half")->SetLineWidth(2);
   g.at("half")->SetFillStyle(1001);
-  g.at("half")->SetFillColor(kYellow);
+  g.at("half")->SetFillColorAlpha(kYellow, alpha);
   g.at("half")->SetLineColor(kBlack);
   g.at("full")->SetLineWidth(2);
 
@@ -248,13 +251,13 @@ void draw_limits(const lim_t & lims)
   x->SetTitleOffset(1.12);
   y->SetTitleSize(textsize);
   y->SetLabelSize(textsize);
-  y->SetRangeUser(1e-16, 1e-12);
+  y->SetRangeUser(1e-16, ymax);
 
   x->SetTickSize(0.025); // Smaller than default (0.03)
   y->SetTickSize(0.025); 
 
-  const double thisworky = 0.80;
   const double thisworkx = 0.335;
+  const double thisworky = 0.71;
   TLegend *l = new TLegend(thisworkx,      thisworky,
                            thisworkx+0.15, thisworky +0.12
   );
@@ -277,13 +280,22 @@ void draw_limits(const lim_t & lims)
   slimlight.SetLineWidth(2);
 
   slimlight.SetFillStyle(1001);
-  slimlight.SetFillColor(kGreen);
+  slimlight.SetFillColorAlpha(kGreen, alpha);
  
   TGraph slimheavy; // irrelevant
   slimheavy.SetPoint(slimheavy.GetN(), 0.05, 0.65e-15);
   slimheavy.SetPoint(slimheavy.GetN(), 0.00, 0.65e-15);
 
   slimheavy.SetLineWidth(2);
+
+  TGraph cabrera;
+  cabrera.SetPoint(cabrera.GetN(), xmin, 7.2e-13 * 2);
+  cabrera.SetPoint(cabrera.GetN(), 1   , 7.2e-13 * 2);
+  cabrera.SetPoint(cabrera.GetN(), 1   , ymax);
+  cabrera.SetPoint(cabrera.GetN(), xmin, ymax);
+
+  cabrera.SetLineWidth(2);
+  cabrera.SetFillColorAlpha(kViolet, alpha);
 
   // Extracted from the plot in the MACRO paper
   TGraph macroheavy;
@@ -328,8 +340,8 @@ void draw_limits(const lim_t & lims)
   macroheavy.SetPoint(macroheavy.GetN(), (0.22115), 1.4488283956730566e-16);
   macroheavy.SetPoint(macroheavy.GetN(), (0.659272), 1.44647434219323e-16);
   macroheavy.SetPoint(macroheavy.GetN(), (1), 1.44647434219323e-16);
-  macroheavy.SetPoint(macroheavy.GetN(), (1), 1e-12);
-  macroheavy.SetPoint(macroheavy.GetN(), (xmin), 1e-12);
+  macroheavy.SetPoint(macroheavy.GetN(), (1), ymax);
+  macroheavy.SetPoint(macroheavy.GetN(), (xmin), ymax);
 
   TGraph macrolight;
   for(int i = 0; i < macroheavy.GetN(); i++)
@@ -344,13 +356,13 @@ void draw_limits(const lim_t & lims)
   macroheavy.SetLineWidth(2);
   macroheavy.SetFillStyle(1001);
   macroheavy.SetLineColor(kBlack);
-  macroheavy.SetFillColor(kCyan-10);
+  macroheavy.SetFillColorAlpha(kCyan-10, alpha);
 
 
   macrolight.SetLineWidth(2);
   macrolight.SetFillStyle(1001);
   macrolight.SetLineColor(kBlack);
-  macrolight.SetFillColor(kCyan);
+  macrolight.SetFillColorAlpha(kCyan, alpha);
 
   TGraph icecube;
   icecube.SetPoint(icecube.GetN(), 0.995, 1e-11); // just for drawing
@@ -363,7 +375,7 @@ void draw_limits(const lim_t & lims)
   }
 
   icecube.SetFillStyle(1001);
-  icecube.SetFillColor(kRed);
+  icecube.SetFillColorAlpha(kRed, alpha);
   icecube.SetLineColor(kBlack);
   icecube.SetLineWidth(2);
 
@@ -379,7 +391,7 @@ void draw_limits(const lim_t & lims)
   }
 
   antares.SetFillStyle(1001);
-  antares.SetFillColor(kOrange);
+  antares.SetFillColorAlpha(kOrange, alpha);
   antares.SetLineColor(kBlack);
   antares.SetLineWidth(2);
 
@@ -390,12 +402,30 @@ void draw_limits(const lim_t & lims)
   macrolight   .Draw("lf"); // 1e10
   antares      .Draw("lf"); // 1e10(?)
   g.at("half")->Draw("lf"); // 5e8
+  cabrera      .Draw("lf"); // Same as NOvA (?)
   icecube      .Draw("lf"); // 1e6
   slimlight    .Draw("lf"); // 1e5
 
 
   l->Draw();
 
+  {  // Cabrera
+    const double x = 0.15,
+                 y = 0.86;
+    TLegend *l = new TLegend(x,      y,
+                             x+0.15, y+0.12);
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(42);
+    l->AddEntry((TH1D*)NULL, "Cabrera: Surface, 2#pi, like NOvA", "");
+    l->Draw();
+
+    TArrow * a = new TArrow(0.36, 1.0e-18,
+                            0.75, 1.0e-18, 0.011, "|>");
+    a->SetLineWidth(2);
+    a->Draw();
+  }
   {
     const double icex = 0.725,
                  icey = 0.173;
@@ -416,7 +446,7 @@ void draw_limits(const lim_t & lims)
   }
   {
     const double antx = 0.67,
-                 anty = 0.36;
+                 anty = 0.32;
     TLegend *l = new TLegend(antx,      anty,
                              antx+0.15, anty+0.12);
     l->SetTextSize(textsize);
@@ -434,7 +464,7 @@ void draw_limits(const lim_t & lims)
   }
   {
     const double macrox = 0.36,
-                 macroy = 0.57;
+                 macroy = 0.53;
     TLegend *l = new TLegend(macrox,      macroy,
                              macrox+0.15, macroy+0.12);
     l->SetTextSize(textsize);
@@ -450,7 +480,7 @@ void draw_limits(const lim_t & lims)
   #ifdef DRAWHEAVY
   {
     const double macrox = 0.36,
-                 macroy = 0.31;
+                 macroy = 0.28;
     TLegend *l = new TLegend(macrox,      macroy,
                              macrox+0.15, macroy+0.12
                              );
@@ -471,8 +501,8 @@ void draw_limits(const lim_t & lims)
   #endif
 
   {
-    const double slimy = 0.73,
-                 slimx = 0.76;
+    const double slimx = 0.77,
+                 slimy = 0.70;
     TLegend *l = new TLegend(slimx,      slimy,
                              slimx+0.15, slimy+0.12);
     l->SetTextSize(textsize);
