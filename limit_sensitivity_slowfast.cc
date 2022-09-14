@@ -27,7 +27,7 @@
 
 using namespace MFRoot;
 
-static double textsize = 0.057;
+static double textsize = 0.052;
 
 /*
   This class keeps track of the cumulative information needed to calculate
@@ -209,10 +209,10 @@ void draw_limits(const lim_t & lims)
   TCanvas *can = new TCanvas;
 
   can->SetCanvasSize(600, 400);
-  can->SetRightMargin(0.015);
-  can->SetTopMargin(0.03);
-  can->SetLeftMargin(0.13);
-  can->SetBottomMargin(0.13);
+  can->SetRightMargin(0.010);
+  can->SetTopMargin(0.027);
+  can->SetLeftMargin(0.115);
+  can->SetBottomMargin(0.125);
 
   can->SetFrameLineWidth(2);
 
@@ -255,11 +255,11 @@ void draw_limits(const lim_t & lims)
   y->SetLabelSize(textsize);
   y->SetRangeUser(1e-16, ymax);
 
-  x->SetTickSize(0.025); // Smaller than default (0.03)
-  y->SetTickSize(0.025); 
+  x->SetTickSize(0.015); // Smaller than default (0.03)
+  y->SetTickSize(0.015); 
 
-  const double thisworky = 0.59;
-  const double thisworkx = 0.41;
+  const double thisworky = 0.52;
+  const double thisworkx = 0.26;
   TLegend *l = new TLegend(thisworkx,      thisworky,
                            thisworkx+0.15, thisworky +0.06*4
   );
@@ -267,25 +267,66 @@ void draw_limits(const lim_t & lims)
   l->SetBorderSize(0);
   l->SetFillStyle(0);
   l->SetTextFont(42);
-  l->SetTextAlign(22);
-  l->AddEntry((TH1D*)NULL, "NOvA", "");
-  l->AddEntry((TH1D*)NULL, "13 year sensitivity, slow+fast", "");
+  l->SetTextAlign(12);
+  l->AddEntry((TH1D*)NULL, "NOvA, 13 year", "");
+  l->AddEntry((TH1D*)NULL, "sensitivity, overall", "");
   l->AddEntry
     ((TH1D*)NULL,
-    "> 5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
+    ">5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
   "");
   l->AddEntry
     ((TH1D*)NULL,
-    "> 10^{6}#kern[-0.3]{ }GeV for #beta > 0.1",
+    "    >10^{6}#kern[-0.3]{ }GeV for #beta > 0.1",
   "");
 
   TGraph slimlight;
-  slimlight.SetPoint(slimlight.GetN(), 1.00, 1e-11);
-  slimlight.SetPoint(slimlight.GetN(), 0.05, 1e-11);
-  slimlight.SetPoint(slimlight.GetN(), 0.05, 1.3e-15);
-  slimlight.SetPoint(slimlight.GetN(), 1.00, 1.3e-15);
 
-  slimlight.SetLineWidth(2);
+  slimlight.SetPoint(slimlight.GetN(), 1, ymax);
+  slimlight.SetPoint(slimlight.GetN(), 0.000089, ymax);
+  slimlight.SetPoint(slimlight.GetN(), 0.00008988841109054591, 3.183e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00009143471406700329, 2.904e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00009380418666398144, 2.678e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00009623506263980887, 2.614e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00009915081680951927, 2.722e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00010042731504499836, 2.850e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.000102154913233549,   3.057e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00010302982519024635, 3.360e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00010480219298964032, 3.683e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00010660504989847922, 4.522e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00010797751623277094, 5.037e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00010890229622637306, 5.971e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.00010890229622637306, 5.971e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.000109, ymax);
+
+  slimlight.SetPoint(slimlight.GetN(), 0.009, ymax);
+  slimlight.SetPoint(slimlight.GetN(), 0.009034047151333588, 2.4114e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.009424638605877472, 1.7950e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.009749236106412613, 1.3506e-14);
+  slimlight.SetPoint(slimlight.GetN(), 0.010344413737342377, 8.9340e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.011163339112402325, 5.9414e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.012047095495477358, 4.4465e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.013678214555560873, 3.1538e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.015929637110667732, 2.5038e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.017782794100389247, 2.2249e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.019353731242483577, 2.0309e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.02142310187038004,  1.8241e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.022924196246146077, 1.7288e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.026472448838535192, 1.6037e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.03299000284067294,  1.4638e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.03809626095526314,  1.4174e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.043992875835166305, 1.3725e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.057194325303422125, 1.3506e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.06549022320294305,  1.3362e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.07956742329247525,  1.3219e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.09667053400910426,  1.3219e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.14269598863094754,  1.3078e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.17782794100389238,  1.3008e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.23315624847200295,  1.2938e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.387467512045613,    1.2938e-15);
+  slimlight.SetPoint(slimlight.GetN(), 0.596671499785315,    1.2869e-15);
+  slimlight.SetPoint(slimlight.GetN(), 1,                    1.2869e-15);
+
+  slimlight.SetLineWidth(1);
 
   slimlight.SetFillStyle(1001);
   slimlight.SetFillColorAlpha(kGreen, alpha);
@@ -295,6 +336,38 @@ void draw_limits(const lim_t & lims)
   slimheavy.SetPoint(slimheavy.GetN(), 0.00, 0.65e-15);
 
   slimheavy.SetLineWidth(2);
+
+  TGraph berkeley;
+  berkeley.SetPoint(berkeley.GetN(), 1, ymax);
+  berkeley.SetPoint(berkeley.GetN(), 1, 1e-12);
+  berkeley.SetPoint(berkeley.GetN(), 0.007, 1e-12);
+  berkeley.SetPoint(berkeley.GetN(), 0.007, ymax);
+  
+  berkeley.SetPoint(berkeley.GetN(), 0.00012095437388542935, ymax);
+  berkeley.SetPoint(berkeley.GetN(), 0.00012095437388542935, 9.34236263460415e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.00011601205430941776, 4.5017913416809247e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.00010897494036169146, 2.3031958162714385e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.00010057962089638911, 1.3442545617806353e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.00009175129438744992, 8.634450182087942e-14);
+  berkeley.SetPoint(berkeley.GetN(), 0.00007883822934105696, 6.17793522326172e-14);
+  berkeley.SetPoint(berkeley.GetN(), 0.0000669887256861911, 5.616139785470251e-14);
+  berkeley.SetPoint(berkeley.GetN(), 0.000057307694675768425, 6.332872527747738e-14);
+  berkeley.SetPoint(berkeley.GetN(), 0.000051155301825344104, 7.952497699458978e-14);
+  berkeley.SetPoint(berkeley.GetN(), 0.00004707071661256225, 1.0729119231853001e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.00004385550639408299, 1.6315378463696875e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.000041365362146698854, 2.6656819649214686e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.00003948583726170778, 4.2521511443329243e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.000038365545318902525, 6.163107515893746e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.000037505300118674406, 9.149160153048394e-13);
+  berkeley.SetPoint(berkeley.GetN(), 0.000036191937950676105, 2.4418099105342384e-12);
+  berkeley.SetPoint(berkeley.GetN(), 0.000036191937950676105, ymax);
+
+
+  berkeley.SetLineWidth(2);
+  berkeley.SetLineStyle(7);
+  berkeley.SetFillStyle(1001);
+  berkeley.SetFillColorAlpha(kGray, alpha);
+  
 
   TGraph cabrera;
   cabrera.SetPoint(cabrera.GetN(), xmin, 7.2e-13 * 2);
@@ -414,6 +487,7 @@ void draw_limits(const lim_t & lims)
   icecube      .Draw("lf"); // 1e6
   g.at("half")->Draw("lf"); // 5e8
   cabrera      .Draw("lf"); // Same as NOvA (?)
+  berkeley     .Draw("lf"); // ~1e5, but somewhat lower altitude than SLIM
   slimlight    .Draw("lf"); // 1e5
 
 
@@ -446,32 +520,28 @@ void draw_limits(const lim_t & lims)
   l->Draw();
 
   {  // Cabrera
-    const double x = 0.15,
-                 y = 0.86;
+    const double x = 0.23,
+                 y = 0.865;
     TLegend *l = new TLegend(x,      y,
                              x+0.15, y+0.12);
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
     l->SetTextFont(42);
-    l->AddEntry((TH1D*)NULL, "Cabrera: Surface, 2#pi, like NOvA", "");
+    l->AddEntry((TH1D*)NULL, "Cabrera, surface", "");
     l->Draw();
-
-    TArrow * a = new TArrow(0.36, 1.0e-18,
-                            0.75, 1.0e-18, 0.011, "|>");
-    a->SetLineWidth(2);
-    a->Draw();
   }
   {
-    const double icex = 0.725,
-                 icey = 0.173;
+    const double icex = 0.72,
+                 icey = 0.13;
     TLegend *l = new TLegend(icex,      icey,
-                             icex+0.15, icey+0.12);
+                             icex+0.15, icey+3*textsize);
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
     l->SetTextFont(42);
-    l->AddEntry((TH1D*)NULL, "IceCube", "");
+    l->AddEntry((TH1D*)NULL, "IceCube,", "");
+    l->AddEntry((TH1D*)NULL, "under ice", "");
     l->AddEntry((TH1D*)NULL, "> 10^{8}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
@@ -482,14 +552,15 @@ void draw_limits(const lim_t & lims)
   }
   {
     const double antx = 0.67,
-                 anty = 0.32;
+                 anty = 0.29;
     TLegend *l = new TLegend(antx,      anty,
-                             antx+0.15, anty+0.12);
+                             antx+0.15, anty+3*textsize);
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
     l->SetTextFont(42);
-    l->AddEntry((TH1D*)NULL, "ANTARES", "");
+    l->AddEntry((TH1D*)NULL, "ANTARES,", "");
+    l->AddEntry((TH1D*)NULL, "underwater", "");
     l->AddEntry((TH1D*)NULL, "> 10^{10}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
@@ -542,16 +613,17 @@ void draw_limits(const lim_t & lims)
   #endif
 
   {
-    const double slimx = 0.77,
-                 slimy = 0.70;
+    const double slimx = 0.70,
+                 slimy = 0.67;
     TLegend *l = new TLegend(slimx,      slimy,
-                             slimx+0.15, slimy+0.12);
+                             slimx+0.15, slimy+textsize*3);
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetTextAlign(22);
     l->SetFillStyle(0);
     l->SetTextFont(42);
-    l->AddEntry((TH1D*)NULL, "SLIM", "");
+    l->AddEntry((TH1D*)NULL, "SLIM,", "");
+    l->AddEntry((TH1D*)NULL, "mountaintop", "");
     l->AddEntry(&slimlight, "> 10^{5}#kern[-0.3]{ }GeV",
 #if 0
     "l");
@@ -561,6 +633,24 @@ void draw_limits(const lim_t & lims)
     "");
 #endif
     l->Draw();
+  }
+  { // Berkeley 1983 with Price 1984 re-analysis, as per Groom
+    const double x = 0.10,
+                 y = 0.59;
+    TLegend *l = new TLegend(x,      y,
+                             x+0.15, y+textsize);
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetTextAlign(22);
+    l->SetFillStyle(0);
+    l->SetTextFont(42);
+    l->AddEntry((TH1D*)NULL, "Berkeley", "");
+    l->Draw();
+
+    TArrow * a = new TArrow(0.9e-4, 1.0e-14,
+                            0.7e-4, 4.5e-14, 0.011, "|>");
+    a->SetLineWidth(2);
+    a->Draw();
   }
 
   can->RedrawAxis();
