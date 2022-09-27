@@ -1,8 +1,3 @@
-/*
-  This program calculates the 90% C.L. upper limit on the monopole flux
-  for a given velocity point.
- */
-
 #include "Constants.hh"
 #include "Event_Info.hh"
 #include "MFRoot.hh"
@@ -256,17 +251,18 @@ void draw_limits(const lim_t & lims)
   x->SetTickSize(0.018); // Smaller than default (0.03)
   y->SetTickSize(0.018); 
 
-  const double thisworkx = 0.335;
-  const double thisworky = 0.71;
+  const double thisworkx = 0.33;
+  const double thisworky = 0.70;
   TLegend *l = new TLegend(thisworkx,      thisworky,
-                           thisworkx+0.15, thisworky +0.12
+                           thisworkx+0.15, thisworky +3*textsize*1.02
   );
   l->SetTextSize(textsize);
   l->SetBorderSize(0);
   l->SetFillStyle(0);
   l->SetTextFont(42);
   l->SetTextAlign(22);
-  l->AddEntry((TH1D*)NULL, "NOvA, surface", "");
+  l->AddEntry((TH1D*)NULL, "NOvA 95 live-day,", "");
+  l->AddEntry((TH1D*)NULL, "surface", "");
   l->AddEntry
     (g.at("half"), "> 5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
   "");
@@ -321,8 +317,11 @@ void draw_limits(const lim_t & lims)
   slimlight.SetLineWidth(1);
   slimlight.SetFillStyle(1001);
   slimlight.SetFillColorAlpha(kGreen, alpha);
- 
-  TGraph slimconclusion; // just to illustrate why we used to draw it like this
+
+  // This is what you get if you just read their conclusion section and don't
+  // look at Figure 7.  Just to illustrate why we used to draw it like this.
+  // Don't bless any plots with this on it.
+  TGraph slimconclusion;
   slimconclusion.SetPoint(slimconclusion.GetN(), 0.05, ymax);
   slimconclusion.SetPoint(slimconclusion.GetN(), 0.05, 1.30e-15);
   slimconclusion.SetPoint(slimconclusion.GetN(), 1.00, 1.30e-15);
@@ -594,7 +593,7 @@ void draw_limits(const lim_t & lims)
 
   { // Berkeley 1983 with Price 1984 re-analysis, as per Groom
     const double x = 0.15,
-                 y = 0.54;
+                 y = 0.52;
     TLegend *l = new TLegend(x,      y,
                              x+0.15, y+2*textsize);
     l->SetTextSize(textsize);
@@ -606,7 +605,7 @@ void draw_limits(const lim_t & lims)
     l->AddEntry(&berkeley, "mountaintop", "");
     l->Draw();
 
-    TArrow * a = new TArrow(0.9e-4, 1.0e-14,
+    TArrow * a = new TArrow(0.9e-4, 0.7e-14,
                             0.7e-4, 4.5e-14, 0.011, "|>");
     a->SetLineWidth(2);
     a->Draw();

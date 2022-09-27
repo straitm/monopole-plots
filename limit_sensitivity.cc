@@ -467,8 +467,8 @@ void draw_limits(const lim_t & lims)
 
 
   {
-    const double thisworky = 0.59;
-    const double thisworkx = 0.335;
+    const double thisworky = 0.61;
+    const double thisworkx = 0.325;
     TLegend *l = new TLegend(thisworkx,      thisworky,
                              thisworkx+0.15, thisworky +0.06*4
     );
@@ -478,7 +478,7 @@ void draw_limits(const lim_t & lims)
     l->SetTextFont(42);
     l->SetTextAlign(22);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
-    l->AddEntry((TH1D*)NULL, "13 year sensitivity,", "");
+    l->AddEntry((TH1D*)NULL, "12 live-year sensitivity,", "");
     l->AddEntry((TH1D*)NULL, "same analysis", "");
     l->AddEntry
       (g.at("half"), "> 5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
