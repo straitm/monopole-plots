@@ -268,7 +268,7 @@ void draw_limits(const lim_t & lims)
   l->SetFillStyle(0);
   l->SetTextFont(42);
   l->SetTextAlign(12);
-  l->AddEntry((TH1D*)NULL, "NOvA, 12 live-year", "");
+  l->AddEntry((TH1D*)NULL, "NOvA, 9 live-year", "");
   l->AddEntry((TH1D*)NULL, "sensitivity, overall", "");
   l->AddEntry
     ((TH1D*)NULL,
