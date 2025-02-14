@@ -8,9 +8,10 @@
   // 63% efficiency, 8.0 years live-time
   const double baselimit = log(10)/ ( Aproj * 8*3.15e7 * 2*M_PI * 0.63 );
 
-  const int nbase = 42;
+  const int nbase = 43;
 
   double basebeta[nbase] = {
+    1e-5,
     0.000105,
     0.000125,
     0.000155,
@@ -20,6 +21,7 @@
     0.000395,
     0.000505,
     0.000635,
+    0.000700,
     0.000795,
     0.001005,
     0.001255,
@@ -61,9 +63,10 @@
     0.0000,
     0.0000,
     0.0000,
-    0.0000003,
+    0.0000,
+    0.0000,
+    0.0000,
     0.000003,
-    0.00003,
     0.0003,
     0.0054,
     0.0243,
@@ -98,6 +101,11 @@
     0.6288
   };
 
+  for(int i = 0; i < nbase; i++){
+    basebeta[i] = log10(basebeta[i]);
+    if(baseeff[i] > 0) baseeff[i] = log10(baseeff[i]);
+  }
+
   TGraph base(nbase, basebeta, baseeff);
 
   const double crosstalkeff = (4519+4487+4596.)/3./6702;
@@ -128,14 +136,14 @@
   const double minlogbeta = -3.75;
   const double maxlogbeta = -0.022;
 
-  const int N = 30;
+  const int N = 300;
   for(int i = 0; i <= N; i++){
     const double logbeta = minlogbeta + i*(maxlogbeta-minlogbeta)/N;
     const double beta = pow(10., logbeta);
 
-    if(base.Eval(beta) <= 0) continue;
-
-    const double limit = baselimit / base.Eval(beta)
+    double limit;
+    if(base.Eval(logbeta) == 0) limit = 2.125e-11;
+    else limit = baselimit / pow(10, base.Eval(logbeta))
       / (beta > 0.68? crosstalkeff: 1) / deltarayeff.Eval(beta);
 
     printf("%f %g %g\n", logbeta, limit, limit/2);
