@@ -258,25 +258,27 @@ void draw_limits(const lim_t & lims)
   x->SetTickSize(0.015); // Smaller than default (0.03)
   y->SetTickSize(0.015); 
 
-  const double thisworky = 0.52;
-  const double thisworkx = 0.26;
+  const double thisworky = 0.513;
+  const double thisworkx = 0.405;
   TLegend *l = new TLegend(thisworkx,      thisworky,
-                           thisworkx+0.15, thisworky +0.06*4
+                           thisworkx+0.15, thisworky +0.06*6*0.8
   );
-  l->SetTextSize(textsize);
+  l->SetTextSize(textsize*0.8);
   l->SetBorderSize(0);
   l->SetFillStyle(0);
   l->SetTextFont(42);
   l->SetTextAlign(12);
-  l->AddEntry((TH1D*)NULL, "NOvA, 9 live-year", "");
-  l->AddEntry((TH1D*)NULL, "sensitivity, overall", "");
+  l->AddEntry((TH1D*)NULL, "NOvA", "");
+  l->AddEntry((TH1D*)NULL, "8 live-year", "");
+  l->AddEntry((TH1D*)NULL, "sensitivity,", "");
+  l->AddEntry((TH1D*)NULL, "fast-only", "");
   l->AddEntry
     ((TH1D*)NULL,
-    ">5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
+    "   >5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
   "");
   l->AddEntry
     ((TH1D*)NULL,
-    "    >10^{6}#kern[-0.3]{ }GeV for #beta > 0.1",
+    "               >10^{6}#kern[-0.3]{ }GeV for #beta > 0.1",
   "");
 
   TGraph slimlight;
@@ -509,7 +511,7 @@ void draw_limits(const lim_t & lims)
     l->Draw();
 
     TArrow * a = new TArrow(3.0e-3, 3.0e-17,
-                            2.3e-3, 1.3e-16, 0.011, "|>");
+                            3.0e-3, 4.0e-16, 0.011, "|>");
     a->SetLineColor(kGray+2);
     a->SetFillColor(kGray+2);
     a->SetLineWidth(2);
