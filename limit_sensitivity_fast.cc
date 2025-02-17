@@ -274,7 +274,7 @@ void draw_limits(const lim_t & lims)
   l->AddEntry((TH1D*)NULL, "fast-only", "");
   l->AddEntry
     ((TH1D*)NULL,
-    "   >5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
+    "   >10^{7}#kern[-0.3]{ }GeV",
   "");
   l->AddEntry
     ((TH1D*)NULL,
@@ -506,12 +506,12 @@ void draw_limits(const lim_t & lims)
     l->SetTextAlign(22);
     l->SetTextColor(kGray+2);
     l->AddEntry((TH1D*)NULL, "NOvA sensitivity", "");
-    l->AddEntry((TH1D*)NULL, "> 10^{16}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV", "");
     l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV, #beta > 0.1", "");
     l->Draw();
 
     TArrow * a = new TArrow(3.0e-3, 3.0e-17,
-                            3.0e-3, 4.0e-16, 0.011, "|>");
+                            3.0e-3, 2.0e-16, 0.011, "|>");
     a->SetLineColor(kGray+2);
     a->SetFillColor(kGray+2);
     a->SetLineWidth(2);

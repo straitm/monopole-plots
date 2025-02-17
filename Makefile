@@ -43,7 +43,8 @@ limit_sensitivity_fast.o: limit_sensitivity_fast.cc Constants.hh
 limit_sensitivity_fast_heavy_plot.pdf: limit_sensitivity_fast_heavy icecube.txt antares.txt
 	./limit_sensitivity_fast_heavy
 
-limit_sensitivity_fast_heavy: limit_sensitivity_fast_heavy.o Event_Info.o
+limit_sensitivity_fast_heavy: limit_sensitivity_fast_heavy.o Event_Info.o make_sens_fastonly.C
+	root -b -q -l -n make_sens_fastonly.C | awk 'NF == 3' | tee limitsensitivityfastdata.txt
 	g++ `root-config --libs` limit_sensitivity_fast_heavy.o Event_Info.o -o limit_sensitivity_fast_heavy
 
 limit_sensitivity_fast_heavy.o: limit_sensitivity_fast.cc Constants.hh

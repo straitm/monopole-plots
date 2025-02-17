@@ -1,3 +1,4 @@
+void make_sens_fastonly()
 {
   printf("-3.75 1.5e-11 1.5e-11\n");
 
@@ -5,8 +6,9 @@
 
   const double Aproj = (x + y + z)/2 * 100 * 100;
 
-  // 63% efficiency, 8.0 years live-time
-  const double baselimit = log(10)/ ( Aproj * 8*3.15e7 * 2*M_PI * 0.63 );
+  // Limit for 100% efficiency for heavy monopoles
+  const double livetime = 250914240.;
+  const double baselimit = log(10)/ ( Aproj * livetime * 4*M_PI);
 
   const int nbase = 43;
 
@@ -57,48 +59,49 @@
   };
 
   double baseeff[nbase] = {
-    0.0000,
-    0.0000,
-    0.0000,
-    0.0000,
-    0.0000,
-    0.0000,
-    0.0000,
-    0.0000,
-    0.0000,
-    0.000003,
+    1e-10,
+    1e-10,
+    1e-10,
+    1e-10,
+    1e-10,
+    1e-10,
+    1e-10,
+    1e-10,
+    1e-10,
+    0.0000003,
+    0.00003,
     0.0003,
-    0.0054,
-    0.0243,
-    0.0552,
-    0.1045,
-    0.1656,
-    0.2412,
-    0.3177,
-    0.3886,
-    0.4566,
-    0.5135,
-    0.5498,
-    0.5709,
-    0.5817,
-    0.5900,
-    0.5965,
-    0.5978,
-    0.5999,
-    0.6068,
-    0.6108,
-    0.6143,
-    0.6143,
-    0.6153,
-    0.6187,
-    0.6175,
-    0.6179,
-    0.6166,
-    0.6148,
-    0.6132,
-    0.6155,
-    0.6288,
-    0.6288
+    0.0053,
+    0.0236,
+    0.0530,
+    0.1007,
+    0.1588,
+    0.2308,
+    0.3034,
+    0.3708,
+    0.4362,
+    0.4898,
+    0.5244,
+    0.5445,
+    0.5536,
+    0.5607,
+    0.5678,
+    0.5679,
+    0.5703,
+    0.5763,
+    0.5797,
+    0.5841,
+    0.5844,
+    0.5845,
+    0.5875,
+    0.5870,
+    0.5882,
+    0.5867,
+    0.5857,
+    0.5831,
+    0.5855,
+    0.5941,
+    0.5941,
   };
 
   for(int i = 0; i < nbase; i++){
@@ -108,11 +111,11 @@
 
   TGraph base(nbase, basebeta, baseeff);
 
-  const double crosstalkeff = (4519+4487+4596.)/3./6702;
+  const double crosstalkeff = (4519+4487+4596.)/3./6702.;
 
   const int ndelta = 7;
   double deltabeta[ndelta] = {
-    0,
+    1e-5,
     0.75,
     0.8,
     0.85,
@@ -124,30 +127,44 @@
   double deltaeff[ndelta] = {
     1,
     1,
-    0.57/0.63,
-    0.53/0.63,
-    0.45/0.63,
-    0.03/0.63,
-    0
+    0.57/pow(10, baseeff[nbase-1]),
+    0.53/pow(10, baseeff[nbase-1]),
+    0.45/pow(10, baseeff[nbase-1]),
+    0.03/pow(10, baseeff[nbase-1]),
+    1e-8
   };
 
-  TGraph deltarayeff(ndelta, deltabeta, deltaeff);
+  for(int i = 0; i < ndelta; i++){
+    deltabeta[i] = log10(deltabeta[i]);
+    if(deltaeff[i] > 0) deltaeff[i] = log10(deltaeff[i]);
+  }
+
+  TGraph * deltarayeff = new TGraph (ndelta, deltabeta, deltaeff);
 
   const double minlogbeta = -3.75;
   const double maxlogbeta = -0.022;
 
-  const int N = 300;
+  const int N = 400;
   for(int i = 0; i <= N; i++){
     const double logbeta = minlogbeta + i*(maxlogbeta-minlogbeta)/N;
     const double beta = pow(10., logbeta);
 
-    double limit;
-    if(base.Eval(logbeta) == 0) limit = 2.125e-11;
-    else limit = baselimit / pow(10, base.Eval(logbeta))
-      / (beta > 0.68? crosstalkeff: 1) / deltarayeff.Eval(beta);
+    const double beff = pow(10, base.Eval(logbeta));
+    const double crosseff = beta > 0.68? crosstalkeff:
+                            beta > 0.64? (beta-0.64)/(0.68-0.64) * (crosstalkeff-1) + 1
+                            :1;
+    const double deltaeff = pow(10, deltarayeff->Eval(logbeta));
 
-    printf("%f %g %g\n", logbeta, limit, limit/2);
+    const double limit = base.Eval(logbeta) == 0? 2.125e-11:
+      baselimit / beff / crosseff / deltaeff;
+
+    printf("%f %g %g\n", logbeta, limit*2, limit);
+    #if 0
+      printf("%f %g %g  %f %g %g %g\n", logbeta, limit, limit/2, beta, beff, crosseff, deltaeff);
+    #endif
   }
 
   printf("-0.022 1.125e-11 1.125e-11\n");
+
+  deltarayeff->Draw("ap*");
 }
