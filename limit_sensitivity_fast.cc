@@ -168,7 +168,7 @@ void draw_limits(const lim_t & lims)
   g["half"] = new TGraph();
   g["full"] = new TGraph();
 
-  std::ifstream infile("limitsensitivityslowfastdata.txt");
+  std::ifstream infile("limitsensitivityfastdata.txt");
   if(infile.is_open()){
     double logbeta, half, full;
     while(infile >> logbeta >> half >> full){
@@ -178,9 +178,9 @@ void draw_limits(const lim_t & lims)
   }
   else{
     int n_point = 0;
-    std::ofstream outfile("limitsensitivityslowfastdata.txt");
+    std::ofstream outfile("limitsensitivityfastdata.txt");
     if(!outfile.is_open()){
-      fprintf(stderr, "Could not open limitsensitivityslowfastdata.txt for writing\n");
+      fprintf(stderr, "Could not open limitsensitivityfastdata.txt for writing\n");
       exit(1);
     }
     for(const auto & lim : lims)
@@ -657,9 +657,9 @@ void draw_limits(const lim_t & lims)
 
   can->RedrawAxis();
 #ifdef DRAWNOVAHEAVY
-  can->SaveAs("limit_sensitivity_slowfast_heavy_plot.pdf");
+  can->SaveAs("limit_sensitivity_fast_heavy_plot.pdf");
 #else
-  can->SaveAs("limit_sensitivity_slowfast_plot.pdf");
+  can->SaveAs("limit_sensitivity_fast_plot.pdf");
 #endif
 }
 
@@ -715,7 +715,7 @@ int main()
  
   std::map<std::string, lim_t> l;
   {
-    std::ifstream infile("limitsensitivityslowfastdata.txt");
+    std::ifstream infile("limitsensitivityfastdata.txt");
     if(!infile.is_open())
       l["0.9dEdx"] = extract_limits(MC_RECO_FILE);
   }
