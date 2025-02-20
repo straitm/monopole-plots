@@ -1,14 +1,10 @@
 /*
-  This program calculates the 90% C.L. upper limit on the monopole flux
-  for a given velocity point.
- */
+  Draw a plot of monopole limits and our sensitivity or limits.
+*/
 
-#include "Constants.hh"
-#include "Event_Info.hh"
-#include "MFRoot.hh"
-
-#include <TFile.h>
 #include <TGraph.h>
+#include <TCanvas.h>
+#include <TH2.h>
 #include <TLegend.h>
 #include <TTree.h>
 #include <TStyle.h>
@@ -18,192 +14,71 @@
 #include <fstream>
 #include <map>
 #include <string>
-#include <vector>
-
-#include <cmath>
-#include <iomanip>
-
-#define DRAWHEAVY
-
-using namespace MFRoot;
 
 static double textsize = 0.052;
+static int font = 42;
 
-/*
-  This class keeps track of the cumulative information needed to calculate
-  the final 90% C.L. upper limits.
- */
-
-class Limit_Info
+double crossover(TGraph * a, TGraph * b)
 {
-public:
-  Limit_Info();
-  Limit_Info(double beta);
-
-  void   add_area(double area);
-  double area() const { return area_; }
-  double beta() const;
-  double efficiency() const;
-  void   increment_counts(bool is_signal);
-  double limit(std::string coverage) const;
-  double log_beta() const;
-  double n_monopoles_total() const;
-  double n_monopoles_signal() const;
-  void   print() const;
-  double projected_area_total() const;
-  
-private:
-  double area_;
-  double beta_;
-  double n_;
-  double n_signal_;
-};
-
-Limit_Info::Limit_Info()
-{
+  const int n = 1000;
+  const double minb = -3, maxb = -1;
+  for(int i = 0; i <= n; i++){
+    const double beta = pow(10, minb + (maxb-minb)*double(i)/n);
+    if(b->Eval(beta) < a->Eval(beta)) return beta;
+  }
+  fprintf(stderr, "Did not find crossover, oh no\n");
+  return 0;
 }
 
-Limit_Info::Limit_Info(double beta) :
-  area_(0.0),
-  beta_(beta),
-  n_(0.0),
-  n_signal_(0.0)
+int main()
 {
-}
+  gStyle->SetOptStat(0);
+ 
+  std::map<std::string, TGraph*> nova;
+  nova["halffast"] = new TGraph();
+  nova["fullfast"] = new TGraph();
+  nova["halfslow"] = new TGraph();
+  nova["fullslow"] = new TGraph();
+  nova["halfcombined"] = new TGraph();
+  nova["fullcombined"] = new TGraph();
 
-
-void Limit_Info::add_area(double area)
-{
-  area_ += area;
-}
-
-
-double Limit_Info::beta() const
-{
-  return beta_;
-}
-
-
-double Limit_Info::efficiency() const
-{
-  return n_signal_ / n_;
-}
-
-
-void Limit_Info::increment_counts(bool is_signal)
-{
-  ++n_;
-
-  if (is_signal)
-    ++n_signal_;
-}
-
-
-double Limit_Info::limit(std::string coverage) const
-{
-  double result = 0.0;
-
-  double omega = M_PI;
-  if (coverage == "half")
-    omega *= 2;
-  else if (coverage == "full")
-    omega *= 4;
-  else
-    std::cerr << "Coverage value (" << coverage << ") is not valid."
-	      << std::endl;
-
-  double T = LIVE_TIME_DDT_CORRECTED;
-
-  if (projected_area_total() > 0)
   {
-    // convert area to cm^2
-    double A_cm2 = projected_area_total() * 1e4;
+    std::ifstream infiles("limitsensitivityfastdata.txt");
+    std::ifstream infilef("limitsensitivityslowdata.txt");
 
-    double eA    = A_cm2 / n_monopoles_total();
-    result       = 2.3 / (omega * T * eA);
-  }
-
-  return result;
-}
-
-
-double Limit_Info::log_beta() const
-{
-  return std::log10(beta_);
-}
-
-
-double Limit_Info::n_monopoles_total() const
-{
-  return n_;
-}
-
-
-double Limit_Info::n_monopoles_signal() const
-{
-  return n_signal_;
-}
-
-
-void Limit_Info::print() const
-{
-  std::cout << std::setw(12) << log_beta() << ", "
-	    << std::setw(12) << efficiency() << ", "
-	    << std::setw(12) << limit("half") << ", "
-	    << std::setw(12) << limit("full")
-	    << std::endl;
-}
-
-
-double Limit_Info::projected_area_total() const
-{
-  return area_;
-}
-
-typedef std::map<double, Limit_Info> lim_t;
-
-void draw_limits(const lim_t & lims)
-{
-  std::map<std::string, TGraph*> g;
-  g["half"] = new TGraph();
-  g["full"] = new TGraph();
-
-  std::ifstream infile("limitsensitivitydata.txt");
-  if(infile.is_open()){
-    double logbeta, half, full;
-    while(infile >> logbeta >> half >> full){
-      g["half"]->SetPoint(g["half"]->GetN(), pow(10, logbeta), half);
-      g["full"]->SetPoint(g["full"]->GetN(), pow(10, logbeta), full);
-    }
-  }
-  else{
-    int n_point = 0;
-    std::ofstream outfile("limitsensitivitydata.txt");
-    if(!outfile.is_open()){
-      fprintf(stderr, "Could not open limitsensitivitydata.txt for writing\n");
-      exit(1);
-    }
-    for(const auto & lim : lims)
-    {
-      const Limit_Info & info = lim.second;
-
-      if (info.log_beta() > -3.75 && info.log_beta() < -1.05)
-      {
-        if(info.limit("full")*1e15 > 10)
-          printf("  $%3.1f$ & %02.0lf & %.0lf\\phantom{.0} \\\\\n",
-            info.log_beta(), info.limit("half")*1e15, info.limit("full")*1e15);
-        else
-          printf("  $%3.1f$ & %02.0lf & \\phantom{0}%.1lf \\\\\n",
-            info.log_beta(), info.limit("half")*1e15, info.limit("full")*1e15);
-
-        g.at("half")->SetPoint(n_point, info.beta(), info.limit("half"));
-        g.at("full")->SetPoint(n_point, info.beta(), info.limit("full"));
-        ++n_point;
-
-        outfile << info.log_beta() << " " << info.limit("half") << " "
-                << info.limit("full") << std::endl;
+    if(infiles.is_open()){
+      double logbeta, half, full;
+      while(infiles >> logbeta >> half >> full){
+        nova["halffast"]->SetPoint(nova["halffast"]->GetN(), pow(10, logbeta), half);
+        nova["fullfast"]->SetPoint(nova["fullfast"]->GetN(), pow(10, logbeta), full);
       }
     }
+
+    if(infilef.is_open()){
+      double logbeta, half, full;
+      while(infilef >> logbeta >> half >> full){
+        nova["halfslow"]->SetPoint(nova["halfslow"]->GetN(), pow(10, logbeta), half);
+        nova["fullslow"]->SetPoint(nova["fullslow"]->GetN(), pow(10, logbeta), full);
+      }
+    }
+
+    #if defined(DRAWFAST) && defined(DRAWSLOW)
+    const double halfcrossbeta = crossover(nova["halfslow"], nova["halffast"]);
+    for(int i = 0; i < nova["halfslow"]->GetN(); i++)
+      if(nova["halfslow"]->GetX()[i] < halfcrossbeta)
+        nova["halfcombined"]->SetPoint(nova["halfcombined"]->GetN(), nova["halfslow"]->GetX()[i], nova["halfslow"]->GetY()[i]); 
+    for(int i = 0; i < nova["halffast"]->GetN(); i++)
+      if(nova["halffast"]->GetX()[i] > halfcrossbeta)
+        nova["halfcombined"]->SetPoint(nova["halfcombined"]->GetN(), nova["halffast"]->GetX()[i], nova["halffast"]->GetY()[i]); 
+
+    const double fullcrossbeta = crossover(nova["fullslow"], nova["fullfast"]);
+    for(int i = 0; i < nova["fullslow"]->GetN(); i++)
+      if(nova["fullslow"]->GetX()[i] < fullcrossbeta)
+        nova["fullcombined"]->SetPoint(nova["fullcombined"]->GetN(), nova["fullslow"]->GetX()[i], nova["fullslow"]->GetY()[i]); 
+    for(int i = 0; i < nova["fullfast"]->GetN(); i++)
+      if(nova["fullfast"]->GetX()[i] > fullcrossbeta)
+        nova["fullcombined"]->SetPoint(nova["fullcombined"]->GetN(), nova["fullfast"]->GetX()[i], nova["fullfast"]->GetY()[i]); 
+    #endif
   }
 
   TCanvas *can = new TCanvas;
@@ -229,11 +104,35 @@ void draw_limits(const lim_t & lims)
 
   const double alpha = 0.88;
   
-  g.at("half")->SetLineWidth(2);
-  g.at("half")->SetFillStyle(1001);
-  g.at("half")->SetFillColorAlpha(kYellow, alpha);
-  g.at("half")->SetLineColor(kBlack);
-  g.at("full")->SetLineWidth(2);
+  nova.at("halffast")->SetLineWidth(2);
+  nova.at("halffast")->SetFillStyle(1001);
+  nova.at("halffast")->SetLineColor(kBlack);
+  nova.at("halffast")->SetFillColorAlpha(kYellow, alpha);
+
+  nova.at("fullfast")->SetLineWidth(2);
+  nova.at("fullfast")->SetFillStyle(1001);
+  nova.at("fullfast")->SetLineColor(kBlack);
+  nova.at("fullfast")->SetFillColorAlpha(kYellow-10, alpha);
+
+  nova.at("halfslow")->SetLineWidth(2);
+  nova.at("halfslow")->SetFillStyle(1001);
+  nova.at("halfslow")->SetLineColor(kBlack);
+  nova.at("halfslow")->SetFillColorAlpha(kYellow, alpha);
+
+  nova.at("fullslow")->SetLineWidth(2);
+  nova.at("fullslow")->SetFillStyle(1001);
+  nova.at("fullslow")->SetLineColor(kBlack);
+  nova.at("fullslow")->SetFillColorAlpha(kYellow-10, alpha);
+
+  nova.at("halfcombined")->SetLineWidth(2);
+  nova.at("halfcombined")->SetFillStyle(1001);
+  nova.at("halfcombined")->SetLineColor(kBlack);
+  nova.at("halfcombined")->SetFillColorAlpha(kYellow, alpha);
+
+  nova.at("fullcombined")->SetLineWidth(2);
+  nova.at("fullcombined")->SetFillStyle(1001);
+  nova.at("fullcombined")->SetLineColor(kBlack);
+  nova.at("fullcombined")->SetFillColorAlpha(kYellow-10, alpha);
 
   TAxis *x = dum.GetXaxis();
   x->SetTitle("Monopole speed (#beta)");
@@ -257,6 +156,7 @@ void draw_limits(const lim_t & lims)
   y->SetTickSize(0.015); 
 
   TGraph slimlight;
+
   slimlight.SetPoint(slimlight.GetN(), 1, ymax);
   slimlight.SetPoint(slimlight.GetN(), 0.000089, ymax);
   slimlight.SetPoint(slimlight.GetN(), 0.00008988841109054591, 3.183e-14);
@@ -302,7 +202,6 @@ void draw_limits(const lim_t & lims)
   slimlight.SetPoint(slimlight.GetN(), 0.596671499785315,    1.2869e-15);
   slimlight.SetPoint(slimlight.GetN(), 1,                    1.2869e-15);
 
-
   slimlight.SetLineWidth(1);
 
   slimlight.SetFillStyle(1001);
@@ -345,7 +244,6 @@ void draw_limits(const lim_t & lims)
   berkeley.SetFillStyle(1001);
   berkeley.SetFillColorAlpha(kGray, alpha);
   
-
 
   TGraph cabrera;
   cabrera.SetPoint(cabrera.GetN(), xmin, 7.2e-13 * 2);
@@ -454,37 +352,34 @@ void draw_limits(const lim_t & lims)
   antares.SetLineWidth(2);
 
 
-#ifdef DRAWHEAVY
   macroheavy.Draw("lf"); // 1e16
+  macrolight.Draw("lf"); // 1e10
+
+#if defined(DRAWFAST) && defined(DRAWSLOW)
+  nova.at("fullcombined")->Draw("lf");
+#elif defined(DRAWFAST)
+  nova.at("fullfast")->Draw("lf"); // 1e16 (same as MACRO, although we say 2e15)
+#elif defined(DRAWSLOW)
+  nova.at("fullslow")->Draw("lf"); // 
 #endif
-  macrolight   .Draw("lf"); // 1e10
-  antares      .Draw("lf"); // 1e10(?)
-  g.at("half")->Draw("lf"); // 5e8
-  cabrera      .Draw("lf"); // Same as NOvA (?)
-  icecube      .Draw("lf"); // 1e6
-  berkeley     .Draw("lf"); // ~1e5, but somewhat lower altitude than SLIM
-  slimlight    .Draw("lf"); // 1e5
 
+  antares.Draw("lf"); // 1e10(?)
+  icecube.Draw("lf"); // 1e6
 
-  {
-    const double thisworky = 0.61;
-    const double thisworkx = 0.325;
-    TLegend *l = new TLegend(thisworkx,      thisworky,
-                             thisworkx+0.15, thisworky +0.06*4
-    );
-    l->SetTextSize(textsize);
-    l->SetBorderSize(0);
-    l->SetFillStyle(0);
-    l->SetTextFont(42);
-    l->SetTextAlign(22);
-    l->AddEntry((TH1D*)NULL, "NOvA", "");
-    l->AddEntry((TH1D*)NULL, "12 live-year sensitivity,", "");
-    l->AddEntry((TH1D*)NULL, "same analysis", "");
-    l->AddEntry
-      (g.at("half"), "> 5#kern[-0.5]{ }#times#kern[-0.9]{ }10^{8}#kern[-0.3]{ }GeV",
-    "");
-    l->Draw();
-  }
+#if defined(DRAWFAST) && defined(DRAWSLOW)
+  nova.at("halfcombined")->Draw("lf"); // 5e8
+#elif defined(DRAWFAST)
+  nova.at("halffast")->Draw("lf"); // 5e8
+#elif defined(DRAWSLOW)
+  nova.at("halfslow")->Draw("lf"); // 
+#endif
+
+  cabrera  .Draw("lf"); // Same as NOvA (?)
+
+  berkeley .Draw("lf"); // ~1e5, but somewhat lower altitude than SLIM
+
+  slimlight.Draw("lf"); // 1e5
+
 
   {  // Cabrera
     const double x = 0.23,
@@ -494,21 +389,28 @@ void draw_limits(const lim_t & lims)
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
-    l->SetTextFont(42);
+    l->SetTextFont(font);
     l->AddEntry((TH1D*)NULL, "Cabrera, surface", "");
     l->Draw();
   }
   {
     const double icex = 0.72,
                  icey = 0.13;
+    #ifdef THIRTEENYEAR
+    TLegend *l = new TLegend(icex,      icey+textsize/2,
+                             icex+0.15, icey+2.5*textsize);
+    #else
     TLegend *l = new TLegend(icex,      icey,
                              icex+0.15, icey+3*textsize);
+    #endif
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
-    l->SetTextFont(42);
+    l->SetTextFont(font);
     l->AddEntry((TH1D*)NULL, "IceCube,", "");
+    #ifndef THIRTEENYEAR
     l->AddEntry((TH1D*)NULL, "under ice", "");
+    #endif
     l->AddEntry((TH1D*)NULL, "> 10^{8}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
@@ -520,14 +422,21 @@ void draw_limits(const lim_t & lims)
   {
     const double antx = 0.67,
                  anty = 0.29;
+    #ifdef THIRTEENYEAR
+    TLegend *l = new TLegend(antx,      anty+textsize/2,
+                             antx+0.15, anty+2.5*textsize);
+    #else
     TLegend *l = new TLegend(antx,      anty,
                              antx+0.15, anty+3*textsize);
+    #endif
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
-    l->SetTextFont(42);
+    l->SetTextFont(font);
     l->AddEntry((TH1D*)NULL, "ANTARES,", "");
+    #ifndef THIRTEENYEAR
     l->AddEntry((TH1D*)NULL, "underwater", "");
+    #endif
     l->AddEntry((TH1D*)NULL, "> 10^{10}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
@@ -537,41 +446,45 @@ void draw_limits(const lim_t & lims)
     a->Draw();
   }
   {
-    const double macrox = 0.62,
-                 macroy = 0.471;
+    const double macrox = 0.12,
+                 macroy = 0.30;
     TLegend *l = new TLegend(macrox,      macroy,
                              macrox+0.15, macroy+0.12);
-    l->SetTextSize(textsize*0.9);
+    l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
-    l->SetTextFont(42);
+    l->SetTextFont(font);
     l->SetTextAlign(22);
-    l->AddEntry((TH1D*)NULL, "MACRO: >10^{10}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, "MACRO", "");
+    l->AddEntry(&macrolight, "> 10^{10}#kern[-0.3]{ }GeV", "");
     l->Draw();
+
+    TArrow * a = new TArrow(1.2e-4, 6.0e-17,
+                            1.2e-4, 7.0e-16, 0.011, "|>");
+    a->SetLineWidth(2);
+    a->Draw();
   }
 
-  #ifdef DRAWHEAVY
   {
-    const double macrox = 0.36,
-                 macroy = 0.28;
+    const double macrox = 0.22,
+                 macroy = 0.16;
     TLegend *l = new TLegend(macrox,      macroy,
                              macrox+0.15, macroy+0.12
                              );
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
-    l->SetTextFont(42);
+    l->SetTextFont(font);
     l->SetTextAlign(22);
     l->AddEntry((TH1D*)NULL, "MACRO", "");
     l->AddEntry((TH1D*)NULL, "> 10^{16}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
-    TArrow * a = new TArrow(1.85e-3, 5.0e-17,
-                            1.85e-3, 2.0e-16, 0.011, "|>");
+    TArrow * a = new TArrow(6.00e-4, 4.0e-18,
+                            2.00e-4, 2.0e-16, 0.011, "|>");
     a->SetLineWidth(2);
     a->Draw();
   }
-  #endif
 
   {
     const double slimx = 0.70,
@@ -582,20 +495,12 @@ void draw_limits(const lim_t & lims)
     l->SetBorderSize(0);
     l->SetTextAlign(22);
     l->SetFillStyle(0);
-    l->SetTextFont(42);
+    l->SetTextFont(font);
     l->AddEntry((TH1D*)NULL, "SLIM,", "");
     l->AddEntry((TH1D*)NULL, "mountaintop", "");
-    l->AddEntry(&slimlight, "> 10^{5}#kern[-0.3]{ }GeV",
-#if 0
-    "l");
-    l->AddEntry(&slimheavy,
-      "> 5 #times 10^{13} GeV", "l");
-#else
-    "");
-#endif
+    l->AddEntry(&slimlight, "> 10^{5}#kern[-0.3]{ }GeV", "");
     l->Draw();
   }
-
   { // Berkeley 1983 with Price 1984 re-analysis, as per Groom
     const double x = 0.10,
                  y = 0.59;
@@ -605,7 +510,7 @@ void draw_limits(const lim_t & lims)
     l->SetBorderSize(0);
     l->SetTextAlign(22);
     l->SetFillStyle(0);
-    l->SetTextFont(42);
+    l->SetTextFont(font);
     l->AddEntry((TH1D*)NULL, "Berkeley", "");
     l->Draw();
 
@@ -614,66 +519,137 @@ void draw_limits(const lim_t & lims)
     a->SetLineWidth(2);
     a->Draw();
   }
-  can->RedrawAxis();
-  can->SaveAs("limit_sensitivity_plot.pdf");
-}
 
-
-lim_t extract_limits(const std::string & file_name)
-{
-  std::cout << "extracting limits from " << file_name << std::endl;
-
-  TFile *file = new TFile(file_name.c_str(), "read");
-  TTree *tree = dynamic_cast<TTree*>(file->Get("mono/Event"));
-  tree_t t;
-  std::string *input_file_name = new std::string("invalid");
-  tree->SetBranchAddress("input_file_name", &input_file_name);
-
-  for(unsigned int i = 0; i < nbranch; i++)
-    tree->SetBranchAddress(BRANCH_NAMES[i], &t[BRANCH_NAMES[i]]);
-
-  lim_t lims;
-
-  for (int entry = 0; entry != tree->GetEntries(); ++entry)
+  #if defined(DRAWFAST) && defined(DRAWSLOW)
   {
-    if (entry % 100000 == 0)
-      std::cout << "processing entry " << entry << " of " << tree->GetEntries()
-                << " ..." << std::endl;
-
-    tree->GetEntry(entry);
-
-    #if 0
-    if (*input_file_name == "invalid"){
-      std::cerr << "\n\n\t\tThe input_file_name branch is not set!\n" << std::endl;
-      _exit(1);
-    }
+    const double thisworkx = 0.3;
+    const double thisworky = 0.513;
+    TLegend *l = new TLegend(thisworkx,      thisworky,
+                             thisworkx+0.15, thisworky +0.06*6
+    );
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(font);
+    l->SetTextAlign(12);
+    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    #ifdef THIRTEENYEAR
+    l->AddEntry((TH1D*)NULL, "13 live-year", "");
+    #else
+    l->AddEntry((TH1D*)NULL, "8 live-year", "");
     #endif
-
-    Event_Info e(t, *input_file_name);
-    const double beta_f = e.beta_from_file_name();
-
-    if (lims.find(beta_f) == lims.end())
-      lims[beta_f] = Limit_Info(beta_f);
-
-    lims.at(beta_f).increment_counts(e.is_signal());
-
-    if (e.is_signal())
-      lims.at(beta_f).add_area(e.area_projected());
+    l->AddEntry((TH1D*)NULL, "sensitivity,", "");
+    l->AddEntry((TH1D*)NULL, "slow and fast", "");
+    l->AddEntry((TH1D*)NULL, ">5#kern[-0.5]{ }#times#kern[-0.3]{ }10^{8}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, ">10^{6}#kern[-0.3]{ }GeV for #beta > 0.1", "");
+    l->Draw();
   }
-
-  return lims;
-}
-
-int main()
-{
-  gStyle->SetOptStat(0);
- 
-  std::map<std::string, lim_t> l;
   {
-    std::ifstream infile("limitsensitivitydata.txt");
-    if(!infile.is_open())
-      l["0.9dEdx"] = extract_limits(MC_RECO_FILE);
-  }
+    const double novaheavyx = 0.46;
+    const double novaheavyy = 0.21;
+    TLegend *l = new TLegend(novaheavyx,      novaheavyy,
+                             novaheavyx+0.15, novaheavyy+textsize*3);
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(font);
+    l->SetTextAlign(22);
+    l->SetTextColor(kBlack);
+    l->AddEntry((TH1D*)NULL, "NOvA sensitivity", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV for #beta > 0.1", "");
+    l->Draw();
 
-  draw_limits(l["0.9dEdx"]);
+    TArrow * a = new TArrow(1.0e-2, 2.5e-17,
+    #ifdef THIRTEENYEAR
+                            1.0e-2, 0.7e-16, 0.011, "|>");
+    #else
+                            1.0e-2, 1.1e-16, 0.011, "|>");
+    #endif
+    a->SetLineColor(kBlack);
+    a->SetFillColor(kBlack);
+    a->SetLineWidth(2);
+    a->Draw();
+  }
+  #elif defined(DRAWFAST)
+  {
+    const double thisworkx = 0.405;
+    const double thisworky = 0.513;
+    TLegend *l = new TLegend(thisworkx,      thisworky,
+                             thisworkx+0.15, thisworky +0.06*6*0.8
+    );
+    l->SetTextSize(textsize*0.8);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(font);
+    l->SetTextAlign(12);
+    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    l->AddEntry((TH1D*)NULL, "8 live-year", "");
+    l->AddEntry((TH1D*)NULL, "sensitivity,", "");
+    l->AddEntry((TH1D*)NULL, "fast-only", "");
+    l->AddEntry
+      ((TH1D*)NULL,
+      "   >10^{8}#kern[-0.3]{ }GeV",
+    "");
+    l->AddEntry((TH1D*)NULL, "               >10^{6}#kern[-0.3]{ }GeV for #beta > 0.1", "");
+    l->Draw();
+  }
+  #elif defined(DRAWSLOW)
+  {
+    const double thisworkx = 0.3;
+    const double thisworky = 0.55;
+    TLegend *l = new TLegend(thisworkx,      thisworky,
+                             thisworkx+0.15, thisworky +textsize*5
+    );
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(font);
+    l->SetTextAlign(12);
+    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    l->AddEntry((TH1D*)NULL, "8 live-year", "");
+    l->AddEntry((TH1D*)NULL, "sensitivity,", "");
+    l->AddEntry((TH1D*)NULL, "slow-only", "");
+    l->AddEntry((TH1D*)NULL, ">5#kern[-0.5]{ }#times#kern[-0.3]{ }10^{8}#kern[-0.3]{ }GeV", "");
+    l->Draw();
+  }
+  {
+    const double novaheavyx = 0.42,
+                 novaheavyy = 0.26;
+    TLegend *l = new TLegend(novaheavyx,      novaheavyy,
+                             novaheavyx+0.15, novaheavyy+textsize*2);
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(font);
+    l->SetTextAlign(22);
+    l->SetTextColor(kBlack);
+    l->AddEntry((TH1D*)NULL, "NOvA sensitivity", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{16}#kern[-0.3]{ }GeV", "");
+    l->Draw();
+
+    TArrow * a = new TArrow(4.0e-3, 2.0e-17,
+                            4.0e-3, 1.1e-16, 0.011, "|>");
+    a->SetLineColor(kBlack);
+    a->SetFillColor(kBlack);
+    a->SetLineWidth(2);
+    a->Draw();
+  }
+  #endif
+
+  can->RedrawAxis();
+
+  std::string speed;
+  #ifdef DRAWFAST
+    #ifdef DRAWSLOW
+      speed = "slowfast";
+    #else
+      speed = "fast";
+    #endif
+  #elif DRAWSLOW
+    speed = "slow";
+  #endif
+  
+
+  can->SaveAs(Form("limit_sensitivity_%s_plot.pdf", speed.c_str()));
 }
