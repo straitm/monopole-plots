@@ -33,14 +33,14 @@ double crossover(TGraph * a, TGraph * b)
 int main()
 {
   gStyle->SetOptStat(0);
- 
+
   std::map<std::string, TGraph*> nova;
   nova["halffast"] = new TGraph();
   nova["fullfast"] = new TGraph();
   nova["halfslow"] = new TGraph();
   nova["fullslow"] = new TGraph();
-  nova["halfcombined"] = new TGraph();
-  nova["fullcombined"] = new TGraph();
+  nova["halfboth"] = new TGraph();
+  nova["fullboth"] = new TGraph();
 
   {
     std::ifstream infiles("limitsensitivityfastdata.txt");
@@ -63,21 +63,41 @@ int main()
     }
 
     #if defined(DRAWFAST) && defined(DRAWSLOW)
-    const double halfcrossbeta = crossover(nova["halfslow"], nova["halffast"]);
-    for(int i = 0; i < nova["halfslow"]->GetN(); i++)
-      if(nova["halfslow"]->GetX()[i] < halfcrossbeta)
-        nova["halfcombined"]->SetPoint(nova["halfcombined"]->GetN(), nova["halfslow"]->GetX()[i], nova["halfslow"]->GetY()[i]); 
-    for(int i = 0; i < nova["halffast"]->GetN(); i++)
-      if(nova["halffast"]->GetX()[i] > halfcrossbeta)
-        nova["halfcombined"]->SetPoint(nova["halfcombined"]->GetN(), nova["halffast"]->GetX()[i], nova["halffast"]->GetY()[i]); 
 
-    const double fullcrossbeta = crossover(nova["fullslow"], nova["fullfast"]);
-    for(int i = 0; i < nova["fullslow"]->GetN(); i++)
-      if(nova["fullslow"]->GetX()[i] < fullcrossbeta)
-        nova["fullcombined"]->SetPoint(nova["fullcombined"]->GetN(), nova["fullslow"]->GetX()[i], nova["fullslow"]->GetY()[i]); 
-    for(int i = 0; i < nova["fullfast"]->GetN(); i++)
-      if(nova["fullfast"]->GetX()[i] > fullcrossbeta)
-        nova["fullcombined"]->SetPoint(nova["fullcombined"]->GetN(), nova["fullfast"]->GetX()[i], nova["fullfast"]->GetY()[i]); 
+    {
+      const double crossbeta = crossover(nova["halfslow"], nova["halffast"]);
+      TGraph * fill = nova["halfboth"];
+      {
+        TGraph * use = nova["halfslow"];
+        for(int i = 0; i < use->GetN(); i++)
+          if(use->GetX()[i] < crossbeta)
+            fill->SetPoint(fill->GetN(), use->GetX()[i], use->GetY()[i]);
+      }
+
+      {
+        TGraph * use = nova["halffast"];
+        for(int i = 0; i < use->GetN(); i++)
+          if(use->GetX()[i] > crossbeta)
+            fill->SetPoint(fill->GetN(), use->GetX()[i], use->GetY()[i]);
+      }
+    }
+
+    {
+      const double crossbeta = crossover(nova["fullslow"], nova["fullfast"]);
+      TGraph * fill = nova["fullboth"];
+      {
+        TGraph * use = nova["fullslow"];
+        for(int i = 0; i < use->GetN(); i++)
+          if(use->GetX()[i] < crossbeta)
+            fill->SetPoint(fill->GetN(), use->GetX()[i], use->GetY()[i]);
+      }
+      {
+        TGraph * use = nova["fullfast"];
+        for(int i = 0; i < use->GetN(); i++)
+          if(use->GetX()[i] > crossbeta)
+            fill->SetPoint(fill->GetN(), use->GetX()[i], use->GetY()[i]);
+      }
+    }
     #endif
   }
 
@@ -99,11 +119,11 @@ int main()
   const double ymax = 1e-11;
 
   TH2D dum("dum", "", 1, xmin, 1, 1, 1e-19, ymax);
-  
+
   dum.Draw();
 
   const double alpha = 0.88;
-  
+
   nova.at("halffast")->SetLineWidth(2);
   nova.at("halffast")->SetFillStyle(1001);
   nova.at("halffast")->SetLineColor(kBlack);
@@ -124,15 +144,15 @@ int main()
   nova.at("fullslow")->SetLineColor(kBlack);
   nova.at("fullslow")->SetFillColorAlpha(kYellow-10, alpha);
 
-  nova.at("halfcombined")->SetLineWidth(2);
-  nova.at("halfcombined")->SetFillStyle(1001);
-  nova.at("halfcombined")->SetLineColor(kBlack);
-  nova.at("halfcombined")->SetFillColorAlpha(kYellow, alpha);
+  nova.at("halfboth")->SetLineWidth(2);
+  nova.at("halfboth")->SetFillStyle(1001);
+  nova.at("halfboth")->SetLineColor(kBlack);
+  nova.at("halfboth")->SetFillColorAlpha(kYellow, alpha);
 
-  nova.at("fullcombined")->SetLineWidth(2);
-  nova.at("fullcombined")->SetFillStyle(1001);
-  nova.at("fullcombined")->SetLineColor(kBlack);
-  nova.at("fullcombined")->SetFillColorAlpha(kYellow-10, alpha);
+  nova.at("fullboth")->SetLineWidth(2);
+  nova.at("fullboth")->SetFillStyle(1001);
+  nova.at("fullboth")->SetLineColor(kBlack);
+  nova.at("fullboth")->SetFillColorAlpha(kYellow-10, alpha);
 
   TAxis *x = dum.GetXaxis();
   x->SetTitle("Monopole speed (#beta)");
@@ -153,7 +173,7 @@ int main()
   y->SetRangeUser(1e-16, ymax);
 
   x->SetTickSize(0.015); // Smaller than default (0.03)
-  y->SetTickSize(0.015); 
+  y->SetTickSize(0.015);
 
   TGraph slimlight;
 
@@ -206,7 +226,7 @@ int main()
 
   slimlight.SetFillStyle(1001);
   slimlight.SetFillColorAlpha(kGreen, alpha);
- 
+
   TGraph slimheavy; // irrelevant
   slimheavy.SetPoint(slimheavy.GetN(), 0.05, 0.65e-15);
   slimheavy.SetPoint(slimheavy.GetN(), 0.00, 0.65e-15);
@@ -218,7 +238,7 @@ int main()
   berkeley.SetPoint(berkeley.GetN(), 1, 1e-12);
   berkeley.SetPoint(berkeley.GetN(), 0.007, 1e-12);
   berkeley.SetPoint(berkeley.GetN(), 0.007, ymax);
-  
+
   berkeley.SetPoint(berkeley.GetN(), 0.00012095437388542935, ymax);
   berkeley.SetPoint(berkeley.GetN(), 0.00012095437388542935, 9.34236263460415e-13);
   berkeley.SetPoint(berkeley.GetN(), 0.00011601205430941776, 4.5017913416809247e-13);
@@ -243,7 +263,7 @@ int main()
   berkeley.SetLineStyle(7);
   berkeley.SetFillStyle(1001);
   berkeley.SetFillColorAlpha(kGray, alpha);
-  
+
 
   TGraph cabrera;
   cabrera.SetPoint(cabrera.GetN(), xmin, 7.2e-13 * 2);
@@ -356,22 +376,22 @@ int main()
   macrolight.Draw("lf"); // 1e10
 
 #if defined(DRAWFAST) && defined(DRAWSLOW)
-  nova.at("fullcombined")->Draw("lf");
+  nova.at("fullboth")->Draw("lf");
 #elif defined(DRAWFAST)
   nova.at("fullfast")->Draw("lf"); // 1e16 (same as MACRO, although we say 2e15)
 #elif defined(DRAWSLOW)
-  nova.at("fullslow")->Draw("lf"); // 
+  nova.at("fullslow")->Draw("lf");
 #endif
 
   antares.Draw("lf"); // 1e10(?)
   icecube.Draw("lf"); // 1e6
 
 #if defined(DRAWFAST) && defined(DRAWSLOW)
-  nova.at("halfcombined")->Draw("lf"); // 5e8
+  nova.at("halfboth")->Draw("lf"); // 5e8
 #elif defined(DRAWFAST)
   nova.at("halffast")->Draw("lf"); // 5e8
 #elif defined(DRAWSLOW)
-  nova.at("halfslow")->Draw("lf"); // 
+  nova.at("halfslow")->Draw("lf");
 #endif
 
   cabrera  .Draw("lf"); // Same as NOvA (?)
@@ -649,7 +669,7 @@ int main()
   #elif DRAWSLOW
     speed = "slow";
   #endif
-  
+
 
   can->SaveAs(Form("limit_sensitivity_%s_plot.pdf", speed.c_str()));
 }
