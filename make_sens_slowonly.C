@@ -6,7 +6,7 @@ void make_sens_slowonly()
   const double Aproj = (x + y + z)/2 * 100 * 100;
 
   // Limit for 100% efficiency for heavy monopoles
-  const double livetime = 257.870154e6
+  const double livetime = 236.977204e6;
   #if 0
     * 13/8. // Thirteen years instead of eight
   #endif
