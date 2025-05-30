@@ -7,11 +7,8 @@ void make_sens_fastonly()
   const double Aproj = (x + y + z)/2 * 100 * 100;
 
   // Limit for 100% efficiency for heavy monopoles
-  const double livetime = 250914240.
-  #if 0
-    * 13/8. // Thirteen years instead of eight
-  #endif
-  ;
+  const double livetime = 234498017.706;
+
   const double baselimit = log(10)/ ( Aproj * livetime * 4*M_PI);
 
   const int nbase = 43;
