@@ -159,7 +159,10 @@ void make_sens_fastonly()
     const double limit = base.Eval(logbeta) == 0? 2.125e-11:
       baselimit / beff / crosseff / deltaeff;
 
-    printf("%f %g %g\n", logbeta, limit*2, limit);
+    const double highmass_solidangle = 4*M_PI;
+    const double lowmass_solidangle = 1*M_PI;
+
+    printf("%f %g %g\n", logbeta, limit*highmass_solidangle/lowmass_solidangle, limit);
     #if 0
       printf("%f %g %g  %f %g %g %g\n", logbeta, limit, limit/2, beta, beff, crosseff, deltaeff);
     #endif

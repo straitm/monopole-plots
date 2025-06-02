@@ -542,10 +542,10 @@ int main()
 
   #if defined(DRAWFAST) && defined(DRAWSLOW)
   {
-    const double thisworkx = 0.3;
-    const double thisworky = 0.513;
+    const double thisworkx = 0.26;
+    const double thisworky = 0.54;
     TLegend *l = new TLegend(thisworkx,      thisworky,
-                             thisworkx+0.15, thisworky +0.06*6
+                             thisworkx+0.15, thisworky +0.06*5
     );
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
@@ -556,12 +556,11 @@ int main()
     #ifdef THIRTEENYEAR
     l->AddEntry((TH1D*)NULL, "13 live-year", "");
     #else
-    l->AddEntry((TH1D*)NULL, "8 live-year", "");
+    l->AddEntry((TH1D*)NULL, "7.5 (slow), 7.4 (fast)", "");
     #endif
-    l->AddEntry((TH1D*)NULL, "sensitivity,", "");
-    l->AddEntry((TH1D*)NULL, "slow and fast", "");
-    l->AddEntry((TH1D*)NULL, ">5#kern[-0.5]{ }#times#kern[-0.3]{ }10^{8}#kern[-0.3]{ }GeV", "");
-    l->AddEntry((TH1D*)NULL, ">10^{6}#kern[-0.3]{ }GeV for #beta > 0.1", "");
+    l->AddEntry((TH1D*)NULL, "live-year sensitivity,", "");
+    l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, "  >10^{7}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
   }
   {
@@ -593,8 +592,8 @@ int main()
   }
   #elif defined(DRAWFAST)
   {
-    const double thisworkx = 0.405;
-    const double thisworky = 0.513;
+    const double thisworkx = 0.390;
+    const double thisworky = 0.515;
     TLegend *l = new TLegend(thisworkx,      thisworky,
                              thisworkx+0.15, thisworky +0.06*6*0.8
     );
@@ -604,14 +603,14 @@ int main()
     l->SetTextFont(font);
     l->SetTextAlign(12);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
-    l->AddEntry((TH1D*)NULL, "8 live-year", "");
+    l->AddEntry((TH1D*)NULL, "7.4 live-year", "");
     l->AddEntry((TH1D*)NULL, "sensitivity,", "");
-    l->AddEntry((TH1D*)NULL, "fast-only", "");
+    l->AddEntry((TH1D*)NULL, "  fast-only", "");
     l->AddEntry
       ((TH1D*)NULL,
-      "   >10^{8}#kern[-0.3]{ }GeV",
+      "        >10^{9}#kern[-0.3]{ }GeV",
     "");
-    l->AddEntry((TH1D*)NULL, "               >10^{6}#kern[-0.3]{ }GeV for #beta > 0.1", "");
+    l->AddEntry((TH1D*)NULL, "                  >10^{7}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
   }
   #elif defined(DRAWSLOW)
@@ -627,10 +626,10 @@ int main()
     l->SetTextFont(font);
     l->SetTextAlign(12);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
-    l->AddEntry((TH1D*)NULL, "8 live-year", "");
+    l->AddEntry((TH1D*)NULL, "7.5 live-year", "");
     l->AddEntry((TH1D*)NULL, "sensitivity,", "");
     l->AddEntry((TH1D*)NULL, "slow-only", "");
-    l->AddEntry((TH1D*)NULL, ">5#kern[-0.5]{ }#times#kern[-0.3]{ }10^{8}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
     l->Draw();
   }
   {

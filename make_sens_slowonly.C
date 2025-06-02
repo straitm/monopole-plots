@@ -96,7 +96,10 @@ void make_sens_slowonly()
 
     const double limit = baselimit / (lbeta < -2.5? the_eff: the_effg);
 
-    printf("%f %g %g\n", lbeta, limit*2, limit);
+    const double highmass_solidangle = 4*M_PI;
+    const double lowmass_solidangle = 1*M_PI;
+
+    printf("%f %g %g\n", lbeta, limit*highmass_solidangle/lowmass_solidangle, limit);
   }
 
   printf("%f 1.125e-11 1.125e-11\n", logbeta[n-1]);
