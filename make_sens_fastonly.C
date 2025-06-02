@@ -6,8 +6,8 @@ void make_sens_fastonly()
 
   const double Aproj = (x + y + z)/2 * 100 * 100;
 
-  // Limit for 100% efficiency for heavy monopoles
-  const double livetime = 234498017.706;
+  // Limit for 100% selection efficiency for heavy monopoles
+  const double livetime = 2.3442229638e8;
 
   const double baselimit = log(10)/ ( Aproj * livetime * 4*M_PI);
 

@@ -613,6 +613,33 @@ int main()
     l->AddEntry((TH1D*)NULL, "                  >10^{7}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
   }
+  {
+    const double novaheavyx = 0.46;
+    const double novaheavyy = 0.21;
+    TLegend *l = new TLegend(novaheavyx,      novaheavyy,
+                             novaheavyx+0.15, novaheavyy+textsize*3);
+    l->SetTextSize(textsize);
+    l->SetBorderSize(0);
+    l->SetFillStyle(0);
+    l->SetTextFont(font);
+    l->SetTextAlign(22);
+    l->SetTextColor(kBlack);
+    l->AddEntry((TH1D*)NULL, "NOvA sensitivity", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV for #beta > 0.1", "");
+    l->Draw();
+
+    TArrow * a = new TArrow(1.0e-2, 2.5e-17,
+    #ifdef THIRTEENYEAR
+                            1.0e-2, 0.7e-16, 0.011, "|>");
+    #else
+                            1.0e-2, 1.1e-16, 0.011, "|>");
+    #endif
+    a->SetLineColor(kBlack);
+    a->SetFillColor(kBlack);
+    a->SetLineWidth(2);
+    a->Draw();
+  }
   #elif defined(DRAWSLOW)
   {
     const double thisworkx = 0.3;
