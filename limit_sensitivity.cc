@@ -558,7 +558,7 @@ int main()
     #else
     l->AddEntry((TH1D*)NULL, "7.5 (slow), 7.4 (fast)", "");
     #endif
-    l->AddEntry((TH1D*)NULL, "live-year sensitivity,", "");
+    l->AddEntry((TH1D*)NULL, "live-year,", "");
     l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
     l->AddEntry((TH1D*)NULL, "  >10^{7}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
@@ -574,7 +574,7 @@ int main()
     l->SetTextFont(font);
     l->SetTextAlign(22);
     l->SetTextColor(kBlack);
-    l->AddEntry((TH1D*)NULL, "NOvA sensitivity", "");
+    l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV", "");
     l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
@@ -595,7 +595,7 @@ int main()
     const double thisworkx = 0.390;
     const double thisworky = 0.515;
     TLegend *l = new TLegend(thisworkx,      thisworky,
-                             thisworkx+0.15, thisworky +0.06*6*0.8
+                             thisworkx+0.15, thisworky +0.06*5*0.8
     );
     l->SetTextSize(textsize*0.8);
     l->SetBorderSize(0);
@@ -604,7 +604,6 @@ int main()
     l->SetTextAlign(12);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "7.4 live-year", "");
-    l->AddEntry((TH1D*)NULL, "sensitivity,", "");
     l->AddEntry((TH1D*)NULL, "  fast-only", "");
     l->AddEntry
       ((TH1D*)NULL,
@@ -624,7 +623,7 @@ int main()
     l->SetTextFont(font);
     l->SetTextAlign(22);
     l->SetTextColor(kBlack);
-    l->AddEntry((TH1D*)NULL, "NOvA sensitivity", "");
+    l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV", "");
     l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
@@ -645,7 +644,7 @@ int main()
     const double thisworkx = 0.3;
     const double thisworky = 0.55;
     TLegend *l = new TLegend(thisworkx,      thisworky,
-                             thisworkx+0.15, thisworky +textsize*5
+                             thisworkx+0.15, thisworky +textsize*4
     );
     l->SetTextSize(textsize);
     l->SetBorderSize(0);
@@ -654,7 +653,6 @@ int main()
     l->SetTextAlign(12);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "7.5 live-year", "");
-    l->AddEntry((TH1D*)NULL, "sensitivity,", "");
     l->AddEntry((TH1D*)NULL, "slow-only", "");
     l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
     l->Draw();
@@ -670,7 +668,7 @@ int main()
     l->SetTextFont(font);
     l->SetTextAlign(22);
     l->SetTextColor(kBlack);
-    l->AddEntry((TH1D*)NULL, "NOvA sensitivity", "");
+    l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "> 10^{16}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
