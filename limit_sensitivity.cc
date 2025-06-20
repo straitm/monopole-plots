@@ -15,7 +15,7 @@
 #include <map>
 #include <string>
 
-#define THIRTEENYEAR
+//#define THIRTEENYEAR
 
 static double textsize = 0.052;
 static int font = 42;

@@ -227,7 +227,7 @@ void make_sens_fastonly()
     const double limit1pi = base1pi.Eval(logbeta) == 0? plottop:
       blimit1pi / crosseff / deltaeff;
 
-    #define FINAL
+    //#define FINAL
     #ifdef FINAL
       printf("%.3f %#10g %#10g\n", logbeta,
              limit1pi/final_analysis_mult, limit4pi/final_analysis_mult);

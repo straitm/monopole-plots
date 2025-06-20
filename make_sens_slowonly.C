@@ -1,12 +1,6 @@
 void make_sens_slowonly()
 {
-  const double x = 7.65 + 7.58, y = 7.65 + 7.49, z = 59.62;
-
-  const double Aproj = (x*y + y*z + z*x)/2 * 100 * 100;
-
-  // Limit for 100% efficiency for heavy monopoles
-  const double livetime = 236.977204e6;
-  const double baselimit = log(10)/ ( Aproj * livetime * 4*M_PI);
+  const double plottop = 1.5e-11;
 
   const int n = 24;
 
@@ -27,11 +21,11 @@ void make_sens_slowonly()
     -2.4,
 
     -2.3,
-    -2.25,
+    -2.2218,
     -2.2,
-    -2.15,
+    -2.1549,
     -2.1,
-    -2.05,
+    -2.0457,
     -2.0,
 
     -1.99,
@@ -39,89 +33,81 @@ void make_sens_slowonly()
     -1.97
   };
 
-  double eff[n] = {
-    0.001,
-    0.053,
-    0.17,
-    0.321,
-    0.418,
-    0.446,
-    0.462,
-    0.467,
-    0.471,
-    0.473,
-    0.475,
-    0.479,
-    0.473,
-    0.469,
+  double limit4pi[n] = {
+    1.0277e-13,
+    1.5143e-15,
+    4.6744e-16,
+    2.4261e-16,
+    1.823e-16,
+    1.6907e-16,
+    1.6372e-16,
+    1.6049e-16,
+    1.6033e-16,
+    1.5863e-16,
+    1.5942e-16,
+    1.5707e-16,
+    1.5912e-16,
+    1.6035e-16,
+    1.8081e-16,
+    3.9765e-16,
+    4.7614e-16,
+    6.9744e-16,
+    1.1907e-15,
+    2.2337e-15,
+    6.3414e-15,
 
-    0.414,
-    0.24585361,
-    0.146,
-    0.092021737,
-    0.058,
-    0.025258662,
-    0.011,
-
-    0.005,
-    0.0005,
-    0.00005,
+    6.3414e-14,
+    6.3414e-13,
+    6.3414e-12,
   };
 
+  double limit1pi[n] = {
+    1.2872e-12,
+    6.4971e-15,
+    2.034e-15,
+    1.0103e-15,
+    7.7187e-16,
+    6.7797e-16,
+    6.6578e-16,
+    6.3281e-16,
+    6.6146e-16,
+    6.258e-16,
+    6.597e-16,
+    6.48e-16,
+    6.4164e-16,
+    6.4401e-16,
+    7.0432e-16,
+    8.3876e-16,
+    9.889e-16,
+    1.3999e-15,
+    2.3832e-15,
+    4.5455e-15,
+    7.7471e-15,
 
-  // Product of the ratio of projected area for the top 1pi solid angle
-  // to the naive quarter and the efficiency in that top 1pi 
-  double corr_1pi[n] = {
-     3.1311, //    -3.7   
-     1.0726, //    -3.6   
-     1.0878, //    -3.5   
-      1.041, //    -3.4   
-     1.0585, //    -3.3   
-     1.0025, //    -3.2   
-     1.0167, //    -3.1   
-    0.98575, //      -3   
-     1.0314, //    -2.9   
-    0.98624, //    -2.8   
-     1.0345, //    -2.7   
-     1.0314, //    -2.6   
-     1.0081, //    -2.5   
-     1.0041, //    -2.4   
-
-    0.97383, //    -2.3   
-    0.52733, // XXX -2.25 -2.2218   
-    0.51923, //    -2.2   
-    0.50181, // XXX -2.15 -2.1549   
-    0.50038, //    -2.1   
-    0.50874, // XXX -2.05 -2.0457   
-    0.30541, //      -2   
-    // I don't think the above numbers can be right, because they imply negative efficiency for near-horizon monopoles
-
-    0.3, // -1.99
-    0.3, // -1.98
-    0.3  // -1.97
+    7.7471e-14,
+    7.7471e-13,
+    7.7471e-12,
   };
 
-  double logeff4pi[n] = { 0 }, logeff1pi[n] = { 0 }, eff1pi[n] = { 0 };
+  double loglimit4pi[n] = { 0 }, loglimit1pi[n] = { 0 };
 
-  const double highmass_solidangle = 4*M_PI;
-  const double lowmass_solidangle = 1*M_PI;
+  for(int i = 0; i < n; i++){
+    loglimit4pi[i] = log10(limit4pi[i]);
+    loglimit1pi[i] = log10(limit1pi[i]);
+  }
 
-  for(int i = 0; i < n; i++) logeff4pi[i] = log10(eff[i]);
-  for(int i = 0; i < n; i++) eff1pi[i] = eff[i] / corr_1pi[i] * lowmass_solidangle/highmass_solidangle;
-  for(int i = 0; i < n; i++) logeff1pi[i] = log10(eff1pi[i]);
+  TSpline3 spline1pi("whatever", logbeta, loglimit1pi, n);
+  TGraph graph1pi(n, logbeta, loglimit1pi);
 
-  TSpline3 spline1pi("whatever", logbeta, eff1pi, n);
-  TGraph graph1pi(n, logbeta, eff1pi);
-
-  TSpline3 spline4pi("whatever", logbeta, eff, n);
-  TGraph graph4pi(n, logbeta, eff);
+  TSpline3 spline4pi("whatever", logbeta, loglimit4pi, n);
+  TGraph graph4pi(n, logbeta, loglimit4pi);
 
   const double minlogbeta = logbeta[0];
   const double maxlogbeta = logbeta[n-1];
 
   const int npoints = 200;
 
-  printf("%f 1.125e-11 1.125e-11\n", logbeta[0]);
+  printf("%f %g %g\n", logbeta[0], plottop, plottop);
 
   double final_analysis_mult = 0;
   {
@@ -141,17 +127,17 @@ void make_sens_slowonly()
     const double lbeta = minlogbeta + (maxlogbeta - minlogbeta)*double(i)/npoints;
 
     // Hack to smooth out the curve
-    const double the_eff1pi = spline1pi.Eval(lbeta);
-    const double the_effg1pi = graph1pi.Eval(lbeta);
+    const double the_limit1pi = pow(10, spline1pi.Eval(lbeta));
+    const double the_limitg1pi = pow(10, graph1pi.Eval(lbeta));
 
-    const double the_eff4pi = spline4pi.Eval(lbeta);
-    const double the_effg4pi = graph4pi.Eval(lbeta);
+    const double the_limit4pi = pow(10, spline4pi.Eval(lbeta));
+    const double the_limitg4pi = pow(10, graph4pi.Eval(lbeta));
 
-    const double limit1pi = baselimit / (lbeta < -2.5? the_eff1pi: the_effg1pi);
+    const double limit1pi = lbeta < -2.5? the_limit1pi: the_limitg1pi;
 
-    const double limit4pi = baselimit / (lbeta < -2.5? the_eff4pi: the_effg4pi);
+    const double limit4pi = lbeta < -2.5? the_limit4pi: the_limitg4pi;
 
-    #define FINAL
+    //#define FINAL
     #ifdef FINAL
       printf("%f %g %g\n", lbeta,
              limit1pi/final_analysis_mult, limit4pi/final_analysis_mult);
@@ -161,5 +147,5 @@ void make_sens_slowonly()
     #endif
   }
 
-  printf("%f 1.125e-11 1.125e-11\n", logbeta[n-1]);
+  printf("%f %g %g\n", logbeta[n-1], plottop, plottop);
 }
