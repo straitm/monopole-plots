@@ -194,6 +194,22 @@ void make_sens_fastonly()
   const double minlogbeta = -3.75;
   const double maxlogbeta = -0.022;
 
+  double final_analysis_mult = 0;
+  {
+    const double livetime_2025_analysis = 234422296.38;
+
+    const double additional_livetime =
+      // A "few months" of as-yet unanalyzed data prior to 2025 analysis cutoff
+      3 * 0.9 * 30 * 86400
+      // From 2025-02-25 to 2028-12-31, optmistically assuming we get another
+      // year of data because of LBNF delays and/or DARPA funding.
+      // Assume 90% uptime for good data.
+      + (10/12. + 3.0) * 365 * 86400 * 0.9;
+
+     final_analysis_mult =
+       (additional_livetime + livetime_2025_analysis)/livetime_2025_analysis;
+  }
+
   const int N = 400;
   for(int i = 0; i <= N; i++){
     const double logbeta = minlogbeta + i*(maxlogbeta-minlogbeta)/N;
@@ -211,7 +227,14 @@ void make_sens_fastonly()
     const double limit1pi = base1pi.Eval(logbeta) == 0? plottop:
       blimit1pi / crosseff / deltaeff;
 
-    printf("%.3f %#10g %#10g\n", logbeta, limit1pi, limit4pi);
+    #define FINAL
+    #ifdef FINAL
+      printf("%.3f %#10g %#10g\n", logbeta,
+             limit1pi/final_analysis_mult, limit4pi/final_analysis_mult);
+    #else
+      printf("%.3f %#10g %#10g\n", logbeta,
+             limit1pi, limit4pi);
+    #endif
   }
 
   // The first element of baselimit4pi is a dummy value that makes the

@@ -6,10 +6,6 @@ void make_sens_slowonly()
 
   // Limit for 100% efficiency for heavy monopoles
   const double livetime = 236.977204e6;
-  #if 0
-    * 13/8. // Thirteen years instead of eight
-  #endif
-  ;
   const double baselimit = log(10)/ ( Aproj * livetime * 4*M_PI);
 
   const int n = 24;
@@ -127,6 +123,20 @@ void make_sens_slowonly()
 
   printf("%f 1.125e-11 1.125e-11\n", logbeta[0]);
 
+  double final_analysis_mult = 0;
+  {
+    const double livetime_2025_analysis = 236.977204e6;
+
+    const double additional_livetime =
+      // From 2024-10-13 to 2028-12-31, optmistically assuming we get another
+      // year of data because of LBNF delays and/or DARPA funding.
+      // Assume 90% uptime for good data.
+      + (1.5/12. + 4.0) * 365 * 86400 * 0.9;
+
+     final_analysis_mult =
+       (additional_livetime + livetime_2025_analysis)/livetime_2025_analysis;
+  }
+
   for(int i = 0; i <= npoints; i++){
     const double lbeta = minlogbeta + (maxlogbeta - minlogbeta)*double(i)/npoints;
 
@@ -141,7 +151,14 @@ void make_sens_slowonly()
 
     const double limit4pi = baselimit / (lbeta < -2.5? the_eff4pi: the_effg4pi);
 
-    printf("%f %g %g\n", lbeta, limit1pi, limit4pi);
+    #define FINAL
+    #ifdef FINAL
+      printf("%f %g %g\n", lbeta,
+             limit1pi/final_analysis_mult, limit4pi/final_analysis_mult);
+    #else
+      printf("%f %g %g\n", lbeta,
+             limit1pi, limit4pi);
+    #endif
   }
 
   printf("%f 1.125e-11 1.125e-11\n", logbeta[n-1]);

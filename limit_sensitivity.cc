@@ -15,6 +15,8 @@
 #include <map>
 #include <string>
 
+#define THIRTEENYEAR
+
 static double textsize = 0.052;
 static int font = 42;
 
@@ -552,13 +554,15 @@ int main()
     l->SetFillStyle(0);
     l->SetTextFont(font);
     l->SetTextAlign(12);
-    l->AddEntry((TH1D*)NULL, "NOvA", "");
     #ifdef THIRTEENYEAR
-    l->AddEntry((TH1D*)NULL, "13 live-year", "");
+    l->AddEntry((TH1D*)NULL, "", "");
+    l->AddEntry((TH1D*)NULL, "Sensitivity", "");
+    l->AddEntry((TH1D*)NULL, "11 live-year", "");
     #else
+    l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "7.5 (slow), 7.4 (fast)", "");
-    #endif
     l->AddEntry((TH1D*)NULL, "live-year,", "");
+    #endif
     l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
     l->AddEntry((TH1D*)NULL, "  >10^{7}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
@@ -574,7 +578,11 @@ int main()
     l->SetTextFont(font);
     l->SetTextAlign(22);
     l->SetTextColor(kBlack);
+    #ifdef THIRTEENYEAR
+    l->AddEntry((TH1D*)NULL, "Sensitivity", "");
+    #else
     l->AddEntry((TH1D*)NULL, "NOvA", "");
+    #endif
     l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV", "");
     l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
