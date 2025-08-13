@@ -191,8 +191,7 @@ void make_sens_fastonly()
 
   TGraph * deltarayeff = new TGraph (ndelta, deltabeta, deltaeff);
 
-  const double minlogbeta = -3.75;
-  const double maxlogbeta = -0.022;
+  const double maxlogbeta = log10(0.99);
 
   double final_analysis_mult = 0;
   {
@@ -210,9 +209,27 @@ void make_sens_fastonly()
        (additional_livetime + livetime_2025_analysis)/livetime_2025_analysis;
   }
 
-  const int N = 400;
-  for(int i = 0; i <= N; i++){
-    const double logbeta = minlogbeta + i*(maxlogbeta-minlogbeta)/N;
+  // Use a large number of divisions across most of the plot, then handle
+  // the last little bit separately.  Why?  Because I had accidentally
+  // not handled beta = 0.95 to 0.99 and I want to keep the same points
+  // that were working under 0.95.  Nothing fundamental.
+  vector<double> logbetas;
+  {
+    const double minlogbeta = -3.75;
+    const double thismaxlogbeta = -0.022;
+    const int N = 400;
+    for(int i = 0; i <= N; i++)
+      logbetas.push_back(minlogbeta + i*(thismaxlogbeta-minlogbeta)/N);
+  }
+  {
+    const int N = 8;
+    const double thisminlogbeta = -0.022;
+    for(int i = 1 /* sic: don't duplicate border point */; i <= N; i++)
+      logbetas.push_back(thisminlogbeta + i*(maxlogbeta-thisminlogbeta)/N);
+  }
+
+  for(int i = 0; i < logbetas.size(); i++){
+    const double logbeta = logbetas[i];
     const double beta = pow(10., logbeta);
 
     const double blimit4pi = pow(10, base4pi.Eval(logbeta));
