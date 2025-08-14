@@ -161,26 +161,31 @@ void make_sens_fastonly()
 
   const double crosstalkeff = (4519+4487+4596.)/3./6702.;
 
-  const int ndelta = 7;
+  const int ndelta = 9;
   double deltabeta[ndelta] = {
     1e-5,
+    0.65, // smooth interpolation
+    0.7,
     0.75,
     0.8,
     0.85,
     0.9,
-    0.99,
+    0.995,
     1
   };
 
+  const double eff_for_no_delta_rays = 6702.;
   double deltaeff[ndelta] = {
     1,
     1,
     // Assume for the moment it is ok to base this on the 4pi study and
     // apply also to 1pi
-    0.57/0.5941,
-    0.53/0.5941,
-    0.45/0.5941,
-    0.03/0.5941,
+    6306./eff_for_no_delta_rays,
+    6104./eff_for_no_delta_rays,
+    5795./eff_for_no_delta_rays,
+    5311./eff_for_no_delta_rays,
+    4456./eff_for_no_delta_rays,
+    48./eff_for_no_delta_rays,
     1e-8
   };
 
@@ -191,7 +196,7 @@ void make_sens_fastonly()
 
   TGraph * deltarayeff = new TGraph (ndelta, deltabeta, deltaeff);
 
-  const double maxlogbeta = log10(0.99);
+  const double maxlogbeta = log10(0.995);
 
   double final_analysis_mult = 0;
   {
@@ -222,7 +227,7 @@ void make_sens_fastonly()
       logbetas.push_back(minlogbeta + i*(thismaxlogbeta-minlogbeta)/N);
   }
   {
-    const int N = 8;
+    const int N = 80;
     const double thisminlogbeta = -0.022;
     for(int i = 1 /* sic: don't duplicate border point */; i <= N; i++)
       logbetas.push_back(thisminlogbeta + i*(maxlogbeta-thisminlogbeta)/N);
@@ -246,10 +251,10 @@ void make_sens_fastonly()
 
     //#define FINAL
     #ifdef FINAL
-      printf("%.3f %#10g %#10g\n", logbeta,
+      printf("%.4f %#10g %#10g\n", logbeta,
              limit1pi/final_analysis_mult, limit4pi/final_analysis_mult);
     #else
-      printf("%.3f %#10g %#10g\n", logbeta,
+      printf("%.4f %#10g %#10g\n", logbeta,
              limit1pi, limit4pi);
     #endif
   }
