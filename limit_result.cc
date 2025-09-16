@@ -545,11 +545,11 @@ int main()
   #if defined(DRAWFAST) && defined(DRAWSLOW)
   {
     const double thisworkx = 0.26;
-    const double thisworky = 0.54;
+    const double thisworky = 0.59;
     TLegend *l = new TLegend(thisworkx,      thisworky,
-                             thisworkx+0.15, thisworky +0.06*5
+                             thisworkx+0.15, thisworky +textsize*0.9*5
     );
-    l->SetTextSize(textsize);
+    l->SetTextSize(textsize*0.8);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
     l->SetTextFont(font);
@@ -560,11 +560,11 @@ int main()
     l->AddEntry((TH1D*)NULL, "11 live-year", "");
     #else
     l->AddEntry((TH1D*)NULL, "NOvA", "");
-    l->AddEntry((TH1D*)NULL, "7.5 (timing), 7.4 (ionization)", "");
-    l->AddEntry((TH1D*)NULL, "live-year,", "");
+    l->AddEntry((TH1D*)NULL, "7.5 live-year (timing)", "");
+    l->AddEntry((TH1D*)NULL, "7.4 live-year (ionization)", "");
     #endif
-    l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
-    l->AddEntry((TH1D*)NULL, "  >10^{7}#kern[-0.3]{ }GeV for #beta > 0.1", "");
+    l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV,", "");
+    l->AddEntry((TH1D*)NULL, ">10^{7}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
   }
   {
@@ -600,10 +600,10 @@ int main()
   }
   #elif defined(DRAWFAST)
   {
-    const double thisworkx = 0.390;
-    const double thisworky = 0.515;
+    const double thisworkx = 0.370;
+    const double thisworky = 0.51+textsize*2;
     TLegend *l = new TLegend(thisworkx,      thisworky,
-                             thisworkx+0.15, thisworky +0.06*5*0.8
+                             thisworkx+0.15, thisworky +textsize*6*0.8
     );
     l->SetTextSize(textsize*0.8);
     l->SetBorderSize(0);
@@ -612,12 +612,10 @@ int main()
     l->SetTextAlign(12);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "7.4 live-year", "");
-    l->AddEntry((TH1D*)NULL, "  ionization-only", "");
-    l->AddEntry
-      ((TH1D*)NULL,
-      "        >10^{9}#kern[-0.3]{ }GeV",
-    "");
-    l->AddEntry((TH1D*)NULL, "                  >10^{7}#kern[-0.3]{ }GeV for #beta > 0.1", "");
+    l->AddEntry((TH1D*)NULL, "ionization-only", "");
+    l->AddEntry((TH1D*)NULL, "     >10^{9}#kern[-0.3]{ }GeV,", "");
+    l->AddEntry((TH1D*)NULL, "     >10^{7}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, "     for #beta > 0.1", "");
     l->Draw();
   }
   {
@@ -632,7 +630,7 @@ int main()
     l->SetTextAlign(22);
     l->SetTextColor(kBlack);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
-    l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV", "");
+    l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV,", "");
     l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
 
@@ -649,12 +647,12 @@ int main()
   }
   #elif defined(DRAWSLOW)
   {
-    const double thisworkx = 0.3;
-    const double thisworky = 0.55;
+    const double thisworkx = 0.32;
+    const double thisworky = 0.63;
     TLegend *l = new TLegend(thisworkx,      thisworky,
-                             thisworkx+0.15, thisworky +textsize*4
+                             thisworkx+0.15, thisworky +textsize*0.9*4
     );
-    l->SetTextSize(textsize);
+    l->SetTextSize(textsize*0.8);
     l->SetBorderSize(0);
     l->SetFillStyle(0);
     l->SetTextFont(font);
