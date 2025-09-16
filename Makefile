@@ -34,15 +34,15 @@ limit_result_slowfast_plot.pdf: limit_result_slowfast icecube.txt antares.txt
 limit_result_fast: limit_result_fast.o Event_Info.o make_sens_fastonly.C limitresultfastdata.txt
 	g++ `root-config --libs` limit_result_fast.o Event_Info.o -o limit_result_fast
 
-limit_result_slow: limit_result_slow.o Event_Info.o make_sens_slowonly.C limitresultslowdata.txt
+limit_result_slow: limit_result_slow.o Event_Info.o make_sens_slowonly.C limitresultlowdata.txt
 	g++ `root-config --libs` limit_result_slow.o Event_Info.o -o limit_result_slow
 
-limit_result_slowfast: limit_result_slowfast.o Event_Info.o make_sens_slowonly.C make_sens_fastonly.C limitresultslowdata.txt limitresultfastdata.txt
+limit_result_slowfast: limit_result_slowfast.o Event_Info.o make_sens_slowonly.C make_sens_fastonly.C limitresultlowdata.txt limitresultfastdata.txt
 	g++ `root-config --libs` limit_result_slowfast.o Event_Info.o -o limit_result_slowfast
 
 
-limitresultslowdata.txt: make_sens_slowonly.C
-	root -b -q -l -n make_sens_slowonly.C | awk 'NF == 3' | tee limitresultslowdata.txt
+limitresultlowdata.txt: make_sens_slowonly.C
+	root -b -q -l -n make_sens_slowonly.C | awk 'NF == 3' | tee limitresultlowdata.txt
 
 limitresultfastdata.txt: make_sens_fastonly.C
 	root -b -q -l -n make_sens_fastonly.C | awk 'NF == 3' | tee limitresultfastdata.txt
