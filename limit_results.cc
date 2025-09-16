@@ -45,8 +45,8 @@ int main()
   nova["fullboth"] = new TGraph();
 
   {
-    std::ifstream infiles("limitsensitivityfastdata.txt");
-    std::ifstream infilef("limitsensitivityslowdata.txt");
+    std::ifstream infiles("limitresultsfastdata.txt");
+    std::ifstream infilef("limitresultsslowdata.txt");
 
     if(infiles.is_open()){
       double logbeta, half, full;
@@ -703,5 +703,5 @@ int main()
   #endif
 
 
-  can->SaveAs(Form("limit_sensitivity_%s_plot.pdf", speed.c_str()));
+  can->SaveAs(Form("limit_results_%s_plot.pdf", speed.c_str()));
 }
