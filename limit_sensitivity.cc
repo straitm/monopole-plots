@@ -560,7 +560,7 @@ int main()
     l->AddEntry((TH1D*)NULL, "11 live-year", "");
     #else
     l->AddEntry((TH1D*)NULL, "NOvA", "");
-    l->AddEntry((TH1D*)NULL, "7.5 (slow), 7.4 (fast)", "");
+    l->AddEntry((TH1D*)NULL, "7.5 (timing), 7.4 (ionization)", "");
     l->AddEntry((TH1D*)NULL, "live-year,", "");
     #endif
     l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
@@ -612,7 +612,7 @@ int main()
     l->SetTextAlign(12);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "7.4 live-year", "");
-    l->AddEntry((TH1D*)NULL, "  fast-only", "");
+    l->AddEntry((TH1D*)NULL, "  ionization-only", "");
     l->AddEntry
       ((TH1D*)NULL,
       "        >10^{9}#kern[-0.3]{ }GeV",
@@ -661,7 +661,7 @@ int main()
     l->SetTextAlign(12);
     l->AddEntry((TH1D*)NULL, "NOvA", "");
     l->AddEntry((TH1D*)NULL, "7.5 live-year", "");
-    l->AddEntry((TH1D*)NULL, "slow-only", "");
+    l->AddEntry((TH1D*)NULL, "timing-only", "");
     l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
     l->Draw();
   }
