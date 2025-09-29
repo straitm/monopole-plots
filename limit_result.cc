@@ -559,7 +559,7 @@ int main()
     l->AddEntry((TH1D*)NULL, "Sensitivity", "");
     l->AddEntry((TH1D*)NULL, "11 live-year", "");
     #else
-    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    l->AddEntry((TH1D*)NULL, "This work", "");
     l->AddEntry((TH1D*)NULL, "7.5 live-year (timing)", "");
     l->AddEntry((TH1D*)NULL, "7.4 live-year (ionization)", "");
     #endif
@@ -581,7 +581,7 @@ int main()
     #ifdef THIRTEENYEAR
     l->AddEntry((TH1D*)NULL, "Sensitivity", "");
     #else
-    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    l->AddEntry((TH1D*)NULL, "This work", "");
     #endif
     l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV", "");
     l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV for #beta > 0.1", "");
@@ -610,7 +610,7 @@ int main()
     l->SetFillStyle(0);
     l->SetTextFont(font);
     l->SetTextAlign(12);
-    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    l->AddEntry((TH1D*)NULL, "This work", "");
     l->AddEntry((TH1D*)NULL, "7.4 live-year", "");
     l->AddEntry((TH1D*)NULL, "ionization-only", "");
     l->AddEntry((TH1D*)NULL, "     >10^{9}#kern[-0.3]{ }GeV,", "");
@@ -629,7 +629,7 @@ int main()
     l->SetTextFont(font);
     l->SetTextAlign(22);
     l->SetTextColor(kBlack);
-    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    l->AddEntry((TH1D*)NULL, "This work", "");
     l->AddEntry((TH1D*)NULL, "> 10^{15}#kern[-0.3]{ }GeV,", "");
     l->AddEntry((TH1D*)NULL, "> 10^{13}#kern[-0.3]{ }GeV for #beta > 0.1", "");
     l->Draw();
@@ -657,7 +657,7 @@ int main()
     l->SetFillStyle(0);
     l->SetTextFont(font);
     l->SetTextAlign(12);
-    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    l->AddEntry((TH1D*)NULL, "This work", "");
     l->AddEntry((TH1D*)NULL, "7.5 live-year", "");
     l->AddEntry((TH1D*)NULL, "timing-only", "");
     l->AddEntry((TH1D*)NULL, ">10^{9}#kern[-0.3]{ }GeV", "");
@@ -674,7 +674,7 @@ int main()
     l->SetTextFont(font);
     l->SetTextAlign(22);
     l->SetTextColor(kBlack);
-    l->AddEntry((TH1D*)NULL, "NOvA", "");
+    l->AddEntry((TH1D*)NULL, "This work", "");
     l->AddEntry((TH1D*)NULL, "> 10^{16}#kern[-0.3]{ }GeV", "");
     l->Draw();
 
